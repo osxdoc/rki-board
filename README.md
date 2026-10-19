@@ -1,56 +1,69 @@
-# Atemwegserkrankungen im Überblick (RKI-Board)
+# Respiratory Diseases at a Glance (RKI Board)
 
-Zweisprachige (DE/EN) Nachbildung des RKI-Dashboards „Atemwegserkrankungen im
-Überblick“ auf Basis der offenen RKI-Daten – als statische Website mit
-automatischer Datenaktualisierung.
+Bilingual (DE/EN) recreation of the Robert Koch Institute (RKI) dashboard
+„Atemwegserkrankungen im Überblick" based on open RKI data — as a static
+website with automatic weekly data updates.
 
 ## Live
 
 - **Website:** <https://osxdoc.github.io/rki-board/>
 - **Repository:** <https://github.com/osxdoc/rki-board>
-- Pages einmalig aktivieren: *Settings → Pages → Deploy from a branch → `main` / `(root)`*
+- Pages must be enabled once: *Settings → Pages → Deploy from a branch → `main` / `(root)`*
 
-## Aufbau
+## Structure
 
-| Pfad | Zweck |
+| Path | Purpose |
 | --- | --- |
-| `index.html` | Seite (statische Texte via `data-i18n`) |
-| `assets/app.js` | Diagramme (SVG, Vanilla JS) + I18N (DE/EN, manuell umschaltbar) |
-| `assets/style.css` | Layout im RKI-Stil |
-| `assets/data.js` | `window.DASH_DATA` – generiert, nicht von Hand editieren |
-| `data/dashboard_data.json` | Dieselben Daten als JSON (generiert) |
-| `data/*.tsv` | Rohdaten der RKI-Quellen (Stand des letzten Commits) |
-| `scripts/build_data.py` | Daten-Pipeline: lädt RKI-TSVs, baut `data.js`/JSON |
-| `.github/workflows/update.yml` | Cron-Job: aktualisiert die Daten wöchentlich |
+| `index.html` | Page (static texts via `data-i18n`) |
+| `assets/app.js` | Charts (SVG, vanilla JS) + I18N (DE/EN, manual toggle; browser language as default) |
+| `assets/style.css` | Layout in RKI style |
+| `assets/data.js` | `window.DASH_DATA` – generated, do not edit by hand |
+| `data/dashboard_data.json` | Same data as JSON (generated) |
+| `data/*.tsv` | Raw data of the RKI sources (state of the last commit) |
+| `scripts/build_data.py` | Data pipeline: downloads RKI TSVs, builds `data.js`/JSON |
+| `.github/workflows/update.yml` | Cron job: updates the data weekly |
 
-## Automatische Aktualisierung
+## Automatic updates
 
-Der Workflow [`update.yml`](.github/workflows/update.yml) läuft jeden Freitag
-08:00 UTC (und manuell über *Actions → RKI-Daten aktualisieren → Run workflow*):
+The workflow [`update.yml`](.github/workflows/update.yml) runs every Friday at
+08:00 UTC (and manually via *Actions → RKI-Daten aktualisieren → Run workflow*):
 
-1. Lädt die aktuellen TSVs von den RKI-GitHub-Repos (GrippeWeb, SARI,
-   ARE-Konsultationsinzidenz).
-2. Baut `data/dashboard_data.json` und `assets/data.js` neu.
-3. Committet und pusht bei Änderungen → GitHub Pages zeigt automatisch die
-   neuen Daten.
+1. Downloads the current TSVs from the RKI GitHub repositories (GrippeWeb,
+   SARI, ARE consultation incidence).
+2. Rebuilds `data/dashboard_data.json` and `assets/data.js`.
+3. Commits and pushes on change → GitHub Pages automatically shows the new data.
 
-Lokal (ohne GitHub):
+Locally (without GitHub):
 
 ```sh
-python3 scripts/build_data.py            # lädt aktuelle Daten aus dem Netz
-python3 scripts/build_data.py --dir data # nutzt die TSVs im Repo
+python3 scripts/build_data.py            # downloads current data from the web
+python3 scripts/build_data.py --dir data # uses the TSVs in this repo
 ```
 
-Erfordert nur Python-Standardbibliothek.
+Requires the Python standard library only.
 
-## Datenquellen (Robert Koch-Institut, offene Daten, CC BY 4.0)
+## Language
+
+The site starts in the browser language (anything starting with `en` → English,
+otherwise German). The DE/EN toggle in the header overrides this permanently
+(saved in `localStorage`).
+
+## License
+
+- **Code** (this repository's source files: HTML, CSS, JS, Python) is licensed
+  under the **MIT License** — see [`LICENSE`](LICENSE).
+- **Data and content** (RKI source data in `data/`, generated files in
+  `assets/data.js` and `data/dashboard_data.json`) are licensed under
+  **CC BY 4.0** — see [`LICENSE_DATA.md`](LICENSE_DATA.md).
+
+## Data sources (Robert Koch-Institut, open data, CC BY 4.0)
 
 - [GrippeWeb – Daten des Wochenberichts](https://github.com/robert-koch-institut/GrippeWeb_Daten_des_Wochenberichts) · [Zenodo 10.5281/zenodo.23387473](https://doi.org/10.5281/zenodo.23387473)
 - [SARI-Hospitalisierungsinzidenz](https://github.com/robert-koch-institut/SARI-Hospitalisierungsinzidenz) · [Zenodo 10.5281/zenodo.23387480](https://doi.org/10.5281/zenodo.23387480)
 - [ARE-Konsultationsinzidenz](https://github.com/robert-koch-institut/ARE-Konsultationsinzidenz)
 - [RKI-Dashboard: Akute respiratorische Erkrankungen](https://www.rki.de/DE/Themen/Infektionskrankheiten/Akute-respiratorische-Erkrankungen/Dashboard_Daten.html)
 
-Die Aktivitäts-Schwellen (sehr niedrig … sehr hoch) sind eine Näherung und
-kalibriert auf die Einstufungen des abgebildeten Original-Dashboards.
+The activity thresholds (very low … very high) are an approximation, calibrated
+to the classifications of the original dashboard shown.
 
-Diese Seite ist eine unabhängige Nachbildung und kein Angebot des RKI.
+This site is an independent recreation and not an offer of the RKI.
