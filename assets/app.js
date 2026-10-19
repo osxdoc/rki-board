@@ -757,7 +757,7 @@
   function euTrendFix() {
     const pool = euTrendPool();
     euTrend.countries = euTrend.countries.filter((c) => pool.indexOf(c) >= 0);
-    if (euTrend.countries.length < 2) {
+    if (euTrend.countries.length === 0) {
       // Top 5 nach letztem Wert als sinnvolle Vorauswahl
       const ranked = pool.map((c) => ({ c, p: euLastPoint(euTrend.ind, c, "total") }))
         .filter((r) => r.p).sort((a, b) => b.p.value - a.p.value).slice(0, 5);
