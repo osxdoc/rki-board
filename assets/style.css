@@ -102,6 +102,8 @@ body{
 }
 .lg-now{color:var(--blue-deep);font-weight:600}
 .lg-prev{color:#9aa1a8}
+.lg-item{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.lg-item svg{flex:none}
 .chart-caption{
   color:#6a737c;font-size:13px;margin:10px 0 2px;
 }

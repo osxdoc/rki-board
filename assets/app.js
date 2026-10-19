@@ -18,8 +18,7 @@
       "chart.click": "Klicken für Details",
       "x.left": "vor 6 Monaten",
       "x.right": "aktuell",
-      "lg.now": "— Aktuell",
-      "lg.prev": "— Vorjahre",
+      "legend.now": "(aktuell)",
       "card.are": "Erkrankungen der Atemwege",
       "card.ili": "Fälle mit Fieber",
       "card.sari": "Fälle im Krankenhaus",
@@ -70,8 +69,7 @@
       "chart.click": "Click for details",
       "x.left": "6 months ago",
       "x.right": "current",
-      "lg.now": "— Current",
-      "lg.prev": "— Previous years",
+      "legend.now": "(current)",
       "card.are": "Respiratory diseases",
       "card.ili": "Cases with fever",
       "card.sari": "Hospitalised cases",
@@ -163,6 +161,13 @@
 
   function seasonKey(s) { return parseInt(s.split("/")[0], 10); }
 
+  // Vergleichslinien der Vorjahre: dunkler = neuer; Strichart zusätzlich (Barrierefreiheit)
+  const PREV_STYLE = [
+    { stroke: "#98a0a8", dash: "none" },
+    { stroke: "#b9bfc6", dash: "5 4" },
+    { stroke: "#d5d9dd", dash: "2 4" },
+  ];
+
   // Chronologische Punkteliste über alle Saisons: [{season, week, value}]
   function chrono(bySeason) {
     const seasons = Object.keys(bySeason).sort((a, b) => seasonKey(a) - seasonKey(b));
@@ -205,6 +210,32 @@
     return points.map((p, i) => (i ? "L" : "M") + x(p.i).toFixed(1) + " " + y(p.value).toFixed(1)).join(" ");
   }
 
+  // Legende unter dem 6-Monats-Diagramm: welche Linie gehört zu welcher Saison
+  function swatch(stroke, dash) {
+    const s = svgEl("svg", { viewBox: "0 0 26 8", width: "26", height: "8", "aria-hidden": "true" });
+    const attrs = { x1: 0, y1: 4, x2: 26, y2: 4, stroke, "stroke-width": 2.6 };
+    if (dash !== "none") attrs["stroke-dasharray"] = dash;
+    s.appendChild(svgEl("line", attrs));
+    return s;
+  }
+  function renderSixMonthLegend(key, cur, prev) {
+    const box = document.getElementById("legend-" + key);
+    if (!box) return;
+    box.replaceChildren();
+    const mk = (stroke, dash, label, cls) => {
+      const sp = document.createElement("span");
+      sp.className = "lg-item " + cls;
+      sp.appendChild(swatch(stroke, dash));
+      sp.appendChild(document.createTextNode(" " + label));
+      box.appendChild(sp);
+    };
+    mk("#69bee0", "none", cur[cur.length - 1].season + " " + t("legend.now"), "lg-now");
+    prev.forEach((pts, k) => {
+      const st = PREV_STYLE[Math.min(k, PREV_STYLE.length - 1)];
+      mk(st.stroke, st.dash, pts[pts.length - 1].season, "lg-prev");
+    });
+  }
+
   // Achsen-Beschriftung: Wochennummern an den Rändern + aktuell
   function renderSixMonthChart(container, key) {
     const cfg = CHARTS[key];
@@ -236,12 +267,14 @@
         "font-size": 11, fill: "#6a737c" }, t("weekPrefix") + cur[i].week));
     }
 
-    // Vorjahre (grau)
+    // Vorjahre (grau abgestuft, mit Hover-Titel "Saison")
     prev.forEach((pts, k) => {
+      const st = PREV_STYLE[Math.min(k, PREV_STYLE.length - 1)];
       const indexed = pts.map((p, i) => Object.assign({ i }, p));
-      svg.appendChild(svgEl("path", { d: pathFrom(indexed, x, y), fill: "none",
-        stroke: "#c9cdd2", "stroke-width": 1.6,
-        "stroke-dasharray": k === 0 ? "none" : k === 1 ? "5 4" : "2 4" }));
+      const path = svgEl("path", { d: pathFrom(indexed, x, y), fill: "none",
+        stroke: st.stroke, "stroke-width": 1.8, "stroke-dasharray": st.dash });
+      path.appendChild(svgEl("title", {}, pts[pts.length - 1].season));
+      svg.appendChild(path);
     });
 
     // Aktuell (blau)
@@ -261,6 +294,7 @@
       "font-weight": 700, fill: lvl.color }, lvl.label));
 
     container.replaceChildren(svg);
+    renderSixMonthLegend(key, cur, prev);
     return { latest, lvl };
   }
 
@@ -304,9 +338,11 @@
     const grays = ["#d3d7db", "#c2c7cc", "#b0b6bc", "#9aa1a8"];
     series.forEach((s, k) => {
       const isLast = k === series.length - 1;
-      svg.appendChild(svgEl("path", { d: pathFrom(s.pts, x, y), fill: "none",
+      const path = svgEl("path", { d: pathFrom(s.pts, x, y), fill: "none",
         stroke: isLast ? "#69bee0" : grays[Math.min(k, grays.length - 1)],
-        "stroke-width": isLast ? 3.2 : 1.7, "stroke-linejoin": "round" }));
+        "stroke-width": isLast ? 3.2 : 1.7, "stroke-linejoin": "round" });
+      path.appendChild(svgEl("title", {}, s.season));
+      svg.appendChild(path);
     });
     container.replaceChildren(svg);
     return { series, shown };
