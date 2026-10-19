@@ -11,7 +11,7 @@
 <!-- Dunkle Kopfzeile wie im Foto -->
 <header class="topbar">
   <div class="topbar-inner">
-    <span class="brand-pill">RKI</span>
+    <span class="brand-pill">RKI · ECDC</span>
     <span class="topbar-label" data-i18n="topbar.label">Details:</span>
     <span class="lang-toggle" role="group" aria-label="Sprache / Language">
       <button type="button" class="lang-btn" id="langDe" lang="de">DE</button>
@@ -20,7 +20,15 @@
   </div>
 </header>
 
-<main class="column">
+<!-- Ansicht umschalten: Deutschland / Europa -->
+<nav class="view-tabs" role="group" aria-label="Ansicht / View">
+  <div class="view-tabs-inner">
+    <button type="button" class="view-tab" id="viewTabDe" data-i18n="tab.de">🇩🇪 Deutschland</button>
+    <button type="button" class="view-tab" id="viewTabEu" data-i18n="tab.eu">🇪🇺 Europa</button>
+  </div>
+</nav>
+
+<main class="column" id="view-de">
 
   <!-- Hero-Leiste -->
   <div class="hero">
@@ -118,10 +126,108 @@
   </section>
 </main>
 
+<main class="column" id="view-eu" hidden>
+
+  <!-- Hero-Leiste Europa -->
+  <div class="hero">
+    <span class="hero-pill" data-i18n="eu.hero.pill">Europa</span>
+    <p class="hero-text" data-i18n="eu.hero.text">Klicken Sie auf die Grafiken für die Details:</p>
+  </div>
+
+  <!-- Titel Europa -->
+  <h1 class="page-title" data-i18n-html="eu.title.html">Atemwegserkrankungen<br>in Europa</h1>
+
+  <!-- Zentrale Status-Badge Europa -->
+  <div class="activity-badge" id="euBadge">Stand: …</div>
+
+  <p class="intro" data-i18n-html="eu.intro.html">
+    Die folgenden Grafiken zeigen die wöchentliche Aktivität von Atemwegserkrankungen
+    in Europa – von <em>sehr niedrig</em> bis <em>sehr hoch</em>. Stand:
+    <strong id="euLatestWeek">–</strong>, Datenquelle: ECDC (ERVISS).
+  </p>
+
+  <!-- Karte 1: Aktuelle SARI-Inzidenz nach Land -->
+  <section class="card" id="card-eu-bars">
+    <div class="card-head">
+      <span class="icon-circle" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9S14.5 18.4 12 21M12 3C9.5 5.6 8.2 8.6 8.2 12s1.3 6.4 3.8 9" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+      </span>
+      <h2 data-i18n="eu.card.bars">Aktuelle SARI-Inzidenz nach Land</h2>
+    </div>
+    <div class="chart-wrap" id="euBarsWrap">
+      <div class="chart" id="chart-eu-bars"></div>
+      <p class="chart-caption" data-i18n="eu.cap.bars">SARI-Rate der zuletzt gemeldeten Woche pro 100.000 Einwohner. Klick auf ein Land öffnet das Detail darunter. Quelle: ECDC</p>
+    </div>
+  </section>
+
+  <!-- Karte 2: 6-Monats-Vergleich -->
+  <section class="card" id="card-eu-trend">
+    <div class="card-head">
+      <span class="icon-circle" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 19l4-8 3 4 4-9 3 6 4-3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 3v18h18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </span>
+      <h2 data-i18n="eu.card.trend">6-Monats-Vergleich der Länder</h2>
+    </div>
+    <div class="chip-row" id="euTrendIndicators" role="group"></div>
+    <div class="chip-row chip-wrap" id="euTrendCountries" role="group"></div>
+    <div class="chart-wrap" id="euTrendWrap">
+      <div class="chart" id="chart-eu-trend"></div>
+      <div class="chart-legend" id="legend-eu-trend"></div>
+      <div class="chart-xlabels"><span data-i18n="x.left">vor 6 Monaten</span><span data-i18n="x.right">aktuell</span></div>
+      <p class="chart-caption" data-i18n="eu.cap.trend">Letzte 26 Wochen je Land. Quelle: ECDC</p>
+    </div>
+    <details class="definition">
+      <summary data-i18n="eu.def.summary">Wie sind die Aktivitätslevel in der Europa-Ansicht definiert?</summary>
+      <div class="definition-body" id="euDefinitionBody"></div>
+    </details>
+  </section>
+
+  <!-- Karte 3: Land im Detail -->
+  <section class="card" id="card-eu-detail">
+    <div class="card-head">
+      <span class="icon-circle" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 15h18M6 10V7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v3M3 18v2m18-2v2M12 7.5v3m-1.5-1.5h3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <h2 data-i18n="eu.card.detail">Land im Detail</h2>
+    </div>
+    <div class="eu-controls">
+      <label class="eu-select-label" for="euCountrySelect" data-i18n="eu.detail.country">Land:</label>
+      <select class="eu-select" id="euCountrySelect"></select>
+    </div>
+    <div class="chip-row chip-wrap" id="euDetailIndicators" role="group"></div>
+    <div class="chip-row" id="euDetailAges" role="group"></div>
+    <div class="chart-wrap" id="euDetailWrap">
+      <div class="chart" id="chart-eu-detail"></div>
+      <div class="chart-xlabels"><span data-i18n="modal.xleft">Saisonbeginn (KW&nbsp;40)</span><span data-i18n="x.right">aktuell</span></div>
+      <div class="modal-legend" id="euDetailLegend"></div>
+      <p class="modal-note" id="euDetailNote"></p>
+      <p class="chart-caption" data-i18n="eu.cap.detail">Letzte Saisons. Quelle: ECDC</p>
+    </div>
+  </section>
+
+  <!-- Quellen Europa -->
+  <section class="sources">
+    <h3 data-i18n="sources.h3">Quellen</h3>
+    <ul>
+      <li data-i18n-html="eu.sources.li1">
+        <a href="https://github.com/EU-ECDC/Respiratory_viruses_weekly_data" target="_blank" rel="noopener">
+          ECDC – Respiratory viruses weekly data (GitHub, EU-ECDC)</a> – Rohdaten zu ERVISS (EUPL-1.2)
+      </li>
+      <li data-i18n-html="eu.sources.li2">
+        <a href="https://www.ecdc.europa.eu/en/publications-data/european-respiratory-virus-surveillance-summary-erviss" target="_blank" rel="noopener">
+          ECDC: European Respiratory Virus Surveillance Summary (ERVISS)</a>
+      </li>
+      <li data-i18n-html="eu.sources.li3">
+        <a href="https://erviss.org/" target="_blank" rel="noopener">erviss.org – interaktives ECDC-Dashboard</a>
+      </li>
+    </ul>
+  </section>
+</main>
+
 <!-- Dunkler Fußbereich -->
 <footer class="footer">
-  <p data-i18n-html="footer.html">Daten: Robert Koch-Institut (RKI) · GrippeWeb · SARI-Sentinel · Stand: <span id="footerWeek">–</span> ·
-     Diese Seite ist eine Nachbildung auf Basis der offenen RKI-Daten.</p>
+  <p data-i18n-html="footer.html">Daten: Robert Koch-Institut (RKI) · GrippeWeb · SARI-Sentinel · ECDC (ERVISS) · Stand: <span id="footerWeek">–</span> ·
+     Diese Seite ist eine Nachbildung auf Basis der offenen RKI- und ECDC-Daten.</p>
 </footer>
 
 <!-- Detail-Modal -->
@@ -139,6 +245,7 @@
 </div>
 
 <script src="assets/data.js"></script>
+<script src="assets/europe_data.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>

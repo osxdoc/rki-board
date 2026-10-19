@@ -39,7 +39,7 @@
       "sources.li2": "<a href=\"https://github.com/robert-koch-institut/SARI-Hospitalisierungsinzidenz\" target=\"_blank\" rel=\"noopener\">SARI-Hospitalisierungsinzidenz (GitHub, RKI)</a> – wöchentliche Krankenhaus-Einweisungen; <a href=\"https://doi.org/10.5281/zenodo.23387480\" target=\"_blank\" rel=\"noopener\">Zenodo DOI 10.5281/zenodo.23387480</a>",
       "sources.li3": "<a href=\"https://github.com/robert-koch-institut/ARE-Konsultationsinzidenz\" target=\"_blank\" rel=\"noopener\">ARE-Konsultationsinzidenz (GitHub, RKI)</a> – ambulante Konsultationen aus dem ARE-Praxis-Sentinel",
       "sources.li4": "<a href=\"https://www.rki.de/DE/Themen/Infektionskrankheiten/Akute-respiratorische-Erkrankungen/Dashboard_Daten.html\" target=\"_blank\" rel=\"noopener\">RKI-Dashboard: Akute respiratorische Erkrankungen – ARE-Dashboard und weitere Daten</a>",
-      "footer.html": "Daten: Robert Koch-Institut (RKI) · GrippeWeb · SARI-Sentinel · Stand: <span id=\"footerWeek\">–</span> · Diese Seite ist eine Nachbildung auf Basis der offenen RKI-Daten.",
+      "footer.html": "Daten: Robert Koch-Institut (RKI) · GrippeWeb · SARI-Sentinel · ECDC (ERVISS) · Stand: <span id=\"footerWeek\">–</span> · Diese Seite ist eine Nachbildung auf Basis der offenen RKI- und ECDC-Daten.",
       "modal.close": "Schließen",
       "modal.xleft": "Saisonbeginn (KW\u00a040)",
       "modal.ageLabel": "Altersgruppe: ",
@@ -55,6 +55,49 @@
       "unit.sari": "Krankenhaus-Einweisungen (SARI) pro 100.000 Einwohner pro Woche",
       "src.grippe": "GrippeWeb – Daten des Wochenberichts (RKI)",
       "src.sari": "SARI-Hospitalisierungsinzidenz (RKI)",
+      "src.ecdc": "ECDC – Respiratory viruses weekly data (ERVISS)",
+      "tab.de": "🇩🇪 Deutschland",
+      "tab.eu": "🇪🇺 Europa",
+      "eu.hero.pill": "Europa · ECDC",
+      "eu.hero.text": "Klicken Sie auf die Grafiken für die Details:",
+      "eu.title.html": "Atemwegserkrankungen<br>in Europa",
+      "eu.intro.html": "Die Grafiken zeigen die wöchentliche Aktivität von Atemwegserkrankungen in Europa – von <em>sehr niedrig</em> bis <em>sehr hoch</em>. Stand: <strong id=\"euLatestWeek\">–</strong>, Datenquelle: ECDC (ERVISS). Ländervergleiche sind wegen unterschiedlicher Falldefinitionen, Teststrategien und Meldequoten mit Vorsicht zu interpretieren.",
+      "eu.card.bars": "Aktuelle SARI-Inzidenz nach Land",
+      "eu.cap.bars": "SARI-Rate der zuletzt gemeldeten Woche pro 100.000 Einwohner. Klick auf ein Land öffnet das Detail darunter. Quelle: ECDC",
+      "eu.card.trend": "6-Monats-Vergleich der Länder",
+      "eu.cap.trend": "Letzte 26 Wochen je Land. Quelle: ECDC",
+      "eu.def.summary": "Wie sind die Aktivitätslevel in der Europa-Ansicht definiert?",
+      "eu.def.intro": "Dargestellt wird die Wochenrate pro 100.000 Einwohner (Positivität in Prozent). Die Einstufung folgt eigenen, an den ECDC-Baselines orientierten Schwellenbereichen:",
+      "eu.def.th": "Aktivitätslevel",
+      "eu.def.metric.ili": "Fälle mit Fieber (ILI)",
+      "eu.def.metric.sari": "Fälle im Krankenhaus (SARI)",
+      "eu.def.metric.ari": "Atemwegserkrankungen (ARI)",
+      "eu.def.metric.pos": "Labor-Positivität (%)",
+      "eu.def.note": "Stand: {w} – Einstufung Europa (Ø): ILI „{i}“, SARI „{s}“, Influenza-Positivität „{p}“.",
+      "eu.card.detail": "Land im Detail",
+      "eu.detail.country": "Land:",
+      "eu.cap.detail": "Letzte Saisons je Altersgruppe. Quelle: ECDC",
+      "eu.sources.li1": "<a href=\"https://github.com/EU-ECDC/Respiratory_viruses_weekly_data\" target=\"_blank\" rel=\"noopener\">ECDC – Respiratory viruses weekly data (GitHub, EU-ECDC)</a> – Rohdaten zu ERVISS (EUPL-1.2)",
+      "eu.sources.li2": "<a href=\"https://www.ecdc.europa.eu/en/publications-data/european-respiratory-virus-surveillance-summary-erviss\" target=\"_blank\" rel=\"noopener\">ECDC: European Respiratory Virus Surveillance Summary (ERVISS)</a>",
+      "eu.sources.li3": "<a href=\"https://erviss.org/\" target=\"_blank\" rel=\"noopener\">erviss.org – interaktives ECDC-Dashboard</a>",
+      "eu.badge": "Stand: {w} · Ø ILI {v} → {l}",
+      "eu.trend.ind": "Indikator:",
+      "eu.trend.countries": "Länder:",
+      "eu.detail.ages": "Altersgruppe:",
+      "eu.ind.ili": "Fälle mit Fieber (ILI)",
+      "eu.ind.sari": "Fälle im Krankenhaus (SARI)",
+      "eu.ind.ari": "Atemwegserkrankungen (ARI)",
+      "eu.ind.pos-flu": "Influenza-Positivität",
+      "eu.ind.pos-rsv": "RSV-Positivität",
+      "eu.ind.pos-cov": "SARS-CoV-2-Positivität",
+      "eu.unit.sari": "SARI-Rate pro 100.000 Einwohner pro Woche",
+      "eu.unit.ili": "ILI-Konsultationsrate pro 100.000 Einwohner pro Woche",
+      "eu.unit.ari": "ARI-Konsultationsrate pro 100.000 Einwohner pro Woche",
+      "eu.unit.pos": "Labor-Positivität in Prozent",
+      "eu.age.total": "alle",
+      "eu.country.eu": "Europa (Ø der Länder)",
+      "eu.note": "Letzter Wert ({w}): <strong>{v} {u}</strong> → Aktivität: <strong style='color:{c}'>{l}</strong>. Quelle: <a href='{u2}' target='_blank' rel='noopener'>{s}</a>",
+      "eu.nodata": "Für dieses Land liegen zu diesem Indikator keine Daten vor.",
       levels: ["sehr niedrig", "niedrig", "moderat", "erhöht", "hoch", "sehr hoch"],
       months: ["Okt", "Nov", "Dez", "Jan", "Feb", "Mär"],
     },
@@ -91,7 +134,7 @@
       "sources.li2": "<a href=\"https://github.com/robert-koch-institut/SARI-Hospitalisierungsinzidenz\" target=\"_blank\" rel=\"noopener\">SARI hospitalisation incidence (GitHub, RKI)</a> – weekly hospital admissions; <a href=\"https://doi.org/10.5281/zenodo.23387480\" target=\"_blank\" rel=\"noopener\">Zenodo DOI 10.5281/zenodo.23387480</a>",
       "sources.li3": "<a href=\"https://github.com/robert-koch-institut/ARE-Konsultationsinzidenz\" target=\"_blank\" rel=\"noopener\">ARE consultation incidence (GitHub, RKI)</a> – outpatient consultations from the ARE practice sentinel",
       "sources.li4": "<a href=\"https://www.rki.de/DE/Themen/Infektionskrankheiten/Akute-respiratorische-Erkrankungen/Dashboard_Daten.html\" target=\"_blank\" rel=\"noopener\">RKI dashboard: Acute respiratory diseases – ARE dashboard and further data</a>",
-      "footer.html": "Data: Robert Koch-Institut (RKI) · GrippeWeb · SARI sentinel · As of: <span id=\"footerWeek\">–</span> · This page is a replica based on open RKI data.",
+      "footer.html": "Data: Robert Koch-Institut (RKI) · GrippeWeb · SARI sentinel · ECDC (ERVISS) · As of: <span id=\"footerWeek\">–</span> · This page is a replica based on open RKI and ECDC data.",
       "modal.close": "Close",
       "modal.xleft": "Season start (W\u00a040)",
       "modal.ageLabel": "Age group: ",
@@ -107,6 +150,49 @@
       "unit.sari": "Hospital admissions (SARI) per 100,000 population per week",
       "src.grippe": "GrippeWeb – weekly report data (RKI)",
       "src.sari": "SARI hospitalisation incidence (RKI)",
+      "src.ecdc": "ECDC – Respiratory viruses weekly data (ERVISS)",
+      "tab.de": "🇩🇪 Germany",
+      "tab.eu": "🇪🇺 Europe",
+      "eu.hero.pill": "Europe · ECDC",
+      "eu.hero.text": "Click the charts for details:",
+      "eu.title.html": "Respiratory diseases<br>in Europe",
+      "eu.intro.html": "The charts show the weekly activity of respiratory diseases in Europe – from <em>very low</em> to <em>very high</em>. As of: <strong id=\"euLatestWeek\">–</strong>, data source: ECDC (ERVISS). Country comparisons must be interpreted with caution due to differing case definitions, testing strategies and reporting rates.",
+      "eu.card.bars": "Current SARI incidence by country",
+      "eu.cap.bars": "SARI rate of the latest reported week per 100,000 population. Click a country to open its detail below. Source: ECDC",
+      "eu.card.trend": "6-month country comparison",
+      "eu.cap.trend": "Last 26 weeks per country. Source: ECDC",
+      "eu.def.summary": "How are the activity levels in the Europe view defined?",
+      "eu.def.intro": "Shown is the weekly rate per 100,000 population (positivity in percent). The classification follows custom thresholds inspired by the ECDC baselines:",
+      "eu.def.th": "Activity level",
+      "eu.def.metric.ili": "Cases with fever (ILI)",
+      "eu.def.metric.sari": "Hospitalised cases (SARI)",
+      "eu.def.metric.ari": "Respiratory diseases (ARI)",
+      "eu.def.metric.pos": "Lab positivity (%)",
+      "eu.def.note": "As of: {w} – Europe (Ø) levels: ILI “{i}”, SARI “{s}”, influenza positivity “{p}”.",
+      "eu.card.detail": "Country detail",
+      "eu.detail.country": "Country:",
+      "eu.cap.detail": "Recent seasons by age group. Source: ECDC",
+      "eu.sources.li1": "<a href=\"https://github.com/EU-ECDC/Respiratory_viruses_weekly_data\" target=\"_blank\" rel=\"noopener\">ECDC – Respiratory viruses weekly data (GitHub, EU-ECDC)</a> – ERVISS raw data (EUPL-1.2)",
+      "eu.sources.li2": "<a href=\"https://www.ecdc.europa.eu/en/publications-data/european-respiratory-virus-surveillance-summary-erviss\" target=\"_blank\" rel=\"noopener\">ECDC: European Respiratory Virus Surveillance Summary (ERVISS)</a>",
+      "eu.sources.li3": "<a href=\"https://erviss.org/\" target=\"_blank\" rel=\"noopener\">erviss.org – interactive ECDC dashboard</a>",
+      "eu.badge": "As of: {w} · Ø ILI {v} → {l}",
+      "eu.trend.ind": "Indicator:",
+      "eu.trend.countries": "Countries:",
+      "eu.detail.ages": "Age group:",
+      "eu.ind.ili": "Cases with fever (ILI)",
+      "eu.ind.sari": "Hospitalised cases (SARI)",
+      "eu.ind.ari": "Respiratory diseases (ARI)",
+      "eu.ind.pos-flu": "Influenza positivity",
+      "eu.ind.pos-rsv": "RSV positivity",
+      "eu.ind.pos-cov": "SARS-CoV-2 positivity",
+      "eu.unit.sari": "SARI rate per 100,000 population per week",
+      "eu.unit.ili": "ILI consultation rate per 100,000 population per week",
+      "eu.unit.ari": "ARI consultation rate per 100,000 population per week",
+      "eu.unit.pos": "Lab positivity in percent",
+      "eu.age.total": "all",
+      "eu.country.eu": "Europe (average of countries)",
+      "eu.note": "Latest value ({w}): <strong>{v} {u}</strong> → Activity: <strong style='color:{c}'>{l}</strong>. Source: <a href='{u2}' target='_blank' rel='noopener'>{s}</a>",
+      "eu.nodata": "No data available for this country and indicator.",
       levels: ["very low", "low", "moderate", "elevated", "high", "very high"],
       months: ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar"],
     },
@@ -373,11 +459,10 @@
   }
 
   /* ---------- Saison-Diagramm (Modal) ---------- */
-  function renderSeasonChart(container, key, age) {
-    const cfg = CHARTS[key];
-    const bySeason = cfg.get(age) || {};
+  function renderSeasonChart(container, bySeason, ariaLabel) {
     const seasons = Object.keys(bySeason).sort((a, b) => seasonKey(a) - seasonKey(b));
     const shown = seasons.slice(-5);
+
     const W = 1000, H = 340, mL = 64, mR = 24, mT = 18, mB = 26;
     const slots = 52; // KW 40..39
     const series = shown.map((s) => {
@@ -389,8 +474,7 @@
     const x = (i) => mL + (i / (slots - 1)) * (W - mL - mR);
     const y = (v) => H - mB - (v / yMax) * (H - mT - mB);
 
-    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
-      "aria-label": t("card." + key) + t("ariaSeason") + age });
+    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": ariaLabel });
     for (let k = 0; k <= 4; k++) {
       const v = (yMax / 4) * k, yy = y(v);
       svg.appendChild(svgEl("line", { x1: mL, y1: yy, x2: W - mR, y2: yy,
@@ -457,6 +541,8 @@
   function setWeeks() {
     document.getElementById("latestWeek").textContent = latest;
     document.getElementById("footerWeek").textContent = latest;
+    const euW = document.getElementById("euLatestWeek");
+    if (euW) euW.textContent = EU_LATEST;
   }
 
   const results = {};
@@ -498,6 +584,472 @@
     document.getElementById("definitionBody").innerHTML = html;
   }
 
+  /* ---------- Europa: ECDC ERVISS ---------- */
+  const EU = window.EUROPE_DATA || { sari: {}, ili: {}, ari: {}, pos: {}, sev: {}, latest: null };
+  const EU_LATEST = EU.latest || "–";
+  const EU_SOURCE_URL = "https://github.com/EU-ECDC/Respiratory_viruses_weekly_data";
+
+  const EU_THRESHOLDS = {
+    sari: [5, 15, 30, 60, 120],
+    ili: [26.9, 100, 300, 600, 1200],
+    ari: [500, 1000, 2000, 4000, 8000],
+    pos: [1, 5, 10, 25, 50],
+  };
+
+  const EU_INDICATORS = [
+    { key: "sari", store: "sari", rates: true },
+    { key: "ili", store: "ili", rates: true },
+    { key: "ari", store: "ari", rates: true },
+    { key: "pos-flu", store: "pos", path: "Influenza", rates: false },
+    { key: "pos-rsv", store: "pos", path: "RSV", rates: false },
+    { key: "pos-cov", store: "pos", path: "SARS-CoV-2", rates: false },
+  ];
+  const EU_AGES = ["total", "0-4", "5-14", "15-64", "65+"];
+  const EU_COLORS = ["#1f77b4", "#d62728", "#2ca02c", "#9467bd", "#e0701e",
+                     "#17a2b8", "#b32d75", "#6a737c"];
+
+  const EU_NAMES_DE = {
+    Austria: "Österreich", Belgium: "Belgien", Bulgaria: "Bulgarien", Croatia: "Kroatien",
+    Cyprus: "Zypern", Czechia: "Tschechien", Denmark: "Dänemark", Estonia: "Estland",
+    Finland: "Finnland", France: "Frankreich", Germany: "Deutschland", Greece: "Griechenland",
+    Hungary: "Ungarn", Iceland: "Island", Ireland: "Irland", Italy: "Italien",
+    Latvia: "Lettland", Liechtenstein: "Liechtenstein", Lithuania: "Litauen",
+    Luxembourg: "Luxemburg", Malta: "Malta", Netherlands: "Niederlande", Norway: "Norwegen",
+    Poland: "Polen", Portugal: "Portugal", Romania: "Rumänien", Slovakia: "Slowakei",
+    Slovenia: "Slowenien", Spain: "Spanien", Sweden: "Schweden", "EU/EEA": "EU/EWR",
+  };
+  const EU_FLAGS = {
+    Austria: "🇦🇹", Belgium: "🇧🇪", Bulgaria: "🇧🇬", Croatia: "🇭🇷", Cyprus: "🇨🇾",
+    Czechia: "🇨🇿", Denmark: "🇩🇰", Estonia: "🇪🇪", Finland: "🇫🇮", France: "🇫🇷",
+    Germany: "🇩🇪", Greece: "🇬🇷", Hungary: "🇭🇺", Iceland: "🇮🇸", Ireland: "🇮🇪",
+    Italy: "🇮🇹", Latvia: "🇱🇻", Liechtenstein: "🇱🇮", Lithuania: "🇱🇹",
+    Luxembourg: "🇱🇺", Malta: "🇲🇹", Netherlands: "🇳🇱", Norway: "🇳🇴", Poland: "🇵🇱",
+    Portugal: "🇵🇹", Romania: "🇷🇴", Slovakia: "🇸🇰", Slovenia: "🇸🇮", Spain: "🇪🇸",
+    Sweden: "🇸🇪", "EU/EEA": "🇪🇺",
+  };
+  const euName = (c) => (lang === "de" && EU_NAMES_DE[c] ? EU_NAMES_DE[c] : c);
+  const euFlag = (c) => (EU_FLAGS[c] ? EU_FLAGS[c] + " " : "");
+
+  function euInd(key) {
+    for (const i of EU_INDICATORS) if (i.key === key) return i;
+    return EU_INDICATORS[0];
+  }
+
+  // Saison-Datensatz {saison: [[KW, Wert]]} für Land/Indikator/Altersgruppe
+  function euSeries(indKey, country, age) {
+    const ind = euInd(indKey);
+    const c = EU[ind.store] && EU[ind.store][country];
+    if (!c) return {};
+    return (ind.rates ? c[age] : c[ind.path]) || {};
+  }
+
+  // Länder, die zu einem Indikator Daten haben (EU/EEA-Aggregat mitführen)
+  function euCountries(indKey) {
+    const ind = euInd(indKey);
+    const store = EU[ind.store] || {};
+    return Object.keys(store).sort((a, b) => euName(a).localeCompare(euName(b), I18N[lang].locale));
+  }
+
+  // Letzter Punkt einer chronologischen Reihe
+  function euLastPoint(indKey, country, age) {
+    const all = chrono(euSeries(indKey, country, age));
+    return all.length ? all[all.length - 1] : null;
+  }
+
+  function euThKey(indKey) { return indKey.indexOf("pos") === 0 ? "pos" : indKey; }
+  function euLevel(indKey, v) {
+    const th = EU_THRESHOLDS[euThKey(indKey)];
+    for (let i = 0; i < th.length; i++) if (v < th[i]) return { label: t("levels")[i], color: LEVEL_COLORS[i] };
+    return { label: t("levels")[5], color: LEVEL_COLORS[5] };
+  }
+
+  // Ø über die Länder der letzten verfügbaren Woche (ungewichtet, Ländermittel)
+  function euCountryMean(indKey, age) {
+    const vals = [];
+    let week = null;
+    for (const c of euCountries(indKey)) {
+      if (c === "EU/EEA") continue;
+      const p = euLastPoint(indKey, c, age);
+      if (p) {
+        if (!week || p.season + p.week > week) week = p.season + p.week;
+        vals.push(p.value);
+      }
+    }
+    if (!vals.length) return null;
+    return { value: vals.reduce((a, b) => a + b, 0) / vals.length, week };
+  }
+
+  /* ---------- Europa-Badge ---------- */
+  function renderEuBadge() {
+    const badge = document.getElementById("euBadge");
+    if (!badge) return;
+    const mean = euCountryMean("ili", "total");
+    if (!mean) { badge.textContent = "Stand: " + EU_LATEST; badge.style.background = "#6a737c"; return; }
+    const lvl = euLevel("ili", mean.value);
+    badge.textContent = fill(t("eu.badge"), { w: EU_LATEST, v: fmt.format(mean.value), l: lvl.label });
+    badge.style.background = lvl.color;
+  }
+
+  /* ---------- Karte 1: Aktuelle SARI-Inzidenz nach Land (Balken) ---------- */
+  function renderEuBars() {
+    const box = document.getElementById("chart-eu-bars");
+    if (!box) return;
+    const rows = [];
+    for (const c of euCountries("sari")) {
+      if (c === "EU/EEA") continue;
+      const p = euLastPoint("sari", c, "total");
+      if (p) rows.push({ country: c, value: p.value, week: p.week });
+    }
+    rows.sort((a, b) => b.value - a.value);
+    if (!rows.length) { box.replaceChildren(); return; }
+
+    const W = 1000, rowH = 30, mL = 190, mR = 70, mT = 8, mB = 26;
+    const H = mT + rows.length * rowH + mB;
+    const maxV = Math.max.apply(null, rows.map((r) => r.value));
+    const xMax = niceMax(maxV * 1.05);
+    const x = (v) => mL + (v / xMax) * (W - mL - mR);
+
+    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": t("eu.card.bars") });
+    // Gitter + Achse
+    for (let k = 0; k <= 4; k++) {
+      const v = (xMax / 4) * k, xx = x(v);
+      svg.appendChild(svgEl("line", { x1: xx, y1: mT, x2: xx, y2: H - mB,
+        stroke: k === 0 ? "#9aa1a8" : "#e4e7ea", "stroke-width": k === 0 ? 1.4 : 1 }));
+      svg.appendChild(svgEl("text", { x: xx, y: H - mB + 16, "text-anchor": "middle",
+        "font-size": 11, fill: "#6a737c" }, fmt.format(Math.round(v))));
+    }
+    rows.forEach((r, i) => {
+      const yy = mT + i * rowH;
+      const lvl = euLevel("sari", r.value);
+      const label = svgEl("text", { x: mL - 10, y: yy + rowH / 2 + 4, "text-anchor": "end",
+        "font-size": 13, fill: "#37474f" }, euFlag(r.country) + euName(r.country));
+      svg.appendChild(label);
+      const bar = svgEl("rect", { x: mL, y: yy + 5, width: Math.max(2, x(r.value) - mL),
+        height: rowH - 10, rx: 3, fill: lvl.color });
+      bar.appendChild(svgEl("title", {},
+        euName(r.country) + ": " + fmt.format(r.value) + " · " + t("weekPrefix") + r.week));
+      svg.appendChild(bar);
+      svg.appendChild(svgEl("text", { x: x(r.value) + 6, y: yy + rowH / 2 + 4,
+        "font-size": 12, fill: "#455a64" }, fmt.format(r.value)));
+      // Klick -> Detail
+      const hit = svgEl("rect", { x: 0, y: yy, width: W, height: rowH, fill: "transparent",
+        style: "cursor:pointer" });
+      hit.appendChild(svgEl("title", {}, euName(r.country)));
+      hit.addEventListener("click", () => {
+        euDetail.country = r.country;
+        const sel = document.getElementById("euCountrySelect");
+        if (sel) sel.value = r.country;
+        renderEuDetail();
+        const card = document.getElementById("card-eu-detail");
+        if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      svg.appendChild(hit);
+    });
+    box.replaceChildren(svg);
+  }
+
+  /* ---------- Karte 2: 6-Monats-Vergleich (Länder-Chips) ---------- */
+  const euTrend = { ind: "ili", countries: [] };
+
+  function euTrendPool() {
+    return euCountries(euTrend.ind).filter((c) => c !== "EU/EEA");
+  }
+  function euTrendFix() {
+    const pool = euTrendPool();
+    euTrend.countries = euTrend.countries.filter((c) => pool.indexOf(c) >= 0);
+    if (euTrend.countries.length < 2) {
+      // Top 5 nach letztem Wert als sinnvolle Vorauswahl
+      const ranked = pool.map((c) => ({ c, p: euLastPoint(euTrend.ind, c, "total") }))
+        .filter((r) => r.p).sort((a, b) => b.p.value - a.p.value).slice(0, 5);
+      euTrend.countries = ranked.map((r) => r.c);
+    }
+  }
+
+  function renderEuTrendChips() {
+    const indBox = document.getElementById("euTrendIndicators");
+    const cBox = document.getElementById("euTrendCountries");
+    if (!indBox || !cBox) return;
+    indBox.replaceChildren();
+    const lbl = document.createElement("span");
+    lbl.className = "chip-group-label";
+    lbl.textContent = t("eu.trend.ind");
+    indBox.appendChild(lbl);
+    EU_INDICATORS.forEach((ind) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip" + (euTrend.ind === ind.key ? " active" : "");
+      b.textContent = t("eu.ind." + ind.key);
+      b.addEventListener("click", () => {
+        euTrend.ind = ind.key;
+        euTrendFix();
+        renderEurope();
+      });
+      indBox.appendChild(b);
+    });
+    cBox.replaceChildren();
+    const lbl2 = document.createElement("span");
+    lbl2.className = "chip-group-label";
+    lbl2.textContent = t("eu.trend.countries");
+    cBox.appendChild(lbl2);
+    euTrendPool().forEach((c) => {
+      const on = euTrend.countries.indexOf(c) >= 0;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip" + (on ? " active" : "");
+      b.style.setProperty("--chip-color", on ? EU_COLORS[euTrend.countries.indexOf(c) % EU_COLORS.length] : "#90a4ae");
+      b.textContent = euFlag(c) + euName(c);
+      b.addEventListener("click", () => {
+        const i = euTrend.countries.indexOf(c);
+        if (i >= 0) { if (euTrend.countries.length > 1) euTrend.countries.splice(i, 1); }
+        else if (euTrend.countries.length < EU_COLORS.length) euTrend.countries.push(c);
+        renderEurope();
+      });
+      cBox.appendChild(b);
+    });
+  }
+
+  function renderEuTrend() {
+    const box = document.getElementById("chart-eu-trend");
+    if (!box) return;
+    const series = euTrend.countries.map((c) => {
+      const all = chrono(euSeries(euTrend.ind, c, "total"));
+      return { country: c, pts: all.slice(-26) };
+    }).filter((s) => s.pts.length);
+    const n = Math.max.apply(null, series.map((s) => s.pts.length).concat([2]));
+    const W = 1000, H = 320, mL = 64, mR = 16, mT = 18, mB = 30;
+    const allVals = series.flatMap((s) => s.pts.map((p) => p.value));
+    const yMax = niceMax(Math.max.apply(null, allVals.concat([1])) * 1.08);
+    const x = (i) => mL + (i / (n - 1)) * (W - mL - mR);
+    const y = (v) => H - mB - (v / yMax) * (H - mT - mB);
+
+    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
+      "aria-label": t("eu.card.trend") + t("aria6m") });
+    for (let k = 0; k <= 4; k++) {
+      const v = (yMax / 4) * k, yy = y(v);
+      svg.appendChild(svgEl("line", { x1: mL, y1: yy, x2: W - mR, y2: yy,
+        stroke: k === 0 ? "#9aa1a8" : "#e4e7ea", "stroke-width": k === 0 ? 1.4 : 1 }));
+      svg.appendChild(svgEl("text", { x: mL - 8, y: yy + 4, "text-anchor": "end",
+        "font-size": 12, fill: "#6a737c" }, fmt.format(Math.round(v))));
+    }
+    // Zeitachse: Wochen der längsten Reihe (letzte n Wochen)
+    for (let i = n - 1; i >= 0; i -= 4) {
+      const xx = x(i);
+      svg.appendChild(svgEl("line", { x1: xx, y1: mT, x2: xx, y2: H - mB,
+        stroke: "#dfe3e7", "stroke-width": 1 }));
+      // Beschriftung: Woche der längsten Reihe an Position i (von rechts gezählt)
+      const ref = series.map((s) => s.pts[s.pts.length - n + i]).find((p) => p);
+      svg.appendChild(svgEl("text", { x: xx, y: H - mB + 16,
+        "text-anchor": i === n - 1 ? "end" : "middle",
+        "font-size": 11, fill: "#6a737c" }, ref ? t("weekPrefix") + ref.week : ""));
+    }
+    series.forEach((s, k) => {
+      const color = EU_COLORS[k % EU_COLORS.length];
+      const offset = n - s.pts.length; // Reihen enden in unterschiedlichen Wochen
+      const idx = s.pts.map((p, i) => ({ i: i + offset, value: p.value }));
+      const path = svgEl("path", { d: pathFrom(idx, x, y), fill: "none",
+        stroke: color, "stroke-width": 2.4, "stroke-linejoin": "round" });
+      path.appendChild(svgEl("title", {}, euName(s.country)));
+      svg.appendChild(path);
+      const last = s.pts[s.pts.length - 1];
+      svg.appendChild(svgEl("circle", { cx: x(n - 1), cy: y(last.value), r: 4,
+        fill: color, stroke: "#fff", "stroke-width": 1.4 }));
+    });
+    box.replaceChildren(svg);
+    attachHover(svg, box, {
+      W, H, mL, mR, mT, mB, n, x, y,
+      rows: (i) => ({
+        title: (() => {
+          const ref = series.map((s) => s.pts[s.pts.length - n + i]).find((p) => p);
+          return ref ? t("weekPrefix") + ref.week : "";
+        })(),
+        rows: series.map((s, k) => {
+          const p = s.pts[s.pts.length - n + i];
+          return p ? { color: EU_COLORS[k % EU_COLORS.length], label: euName(s.country), value: p.value } : null;
+        }).filter(Boolean),
+      }),
+    });
+    // Legende
+    const legend = document.getElementById("legend-eu-trend");
+    if (legend) {
+      legend.replaceChildren();
+      series.forEach((s, k) => {
+        const sp = document.createElement("span");
+        sp.className = "lg-item";
+        const sw = document.createElement("span");
+        sw.style.cssText = "display:inline-block;width:14px;height:4px;border-radius:2px;background:" +
+          EU_COLORS[k % EU_COLORS.length];
+        sp.appendChild(sw);
+        sp.appendChild(document.createTextNode(" " + euName(s.country)));
+        legend.appendChild(sp);
+      });
+    }
+  }
+
+  /* ---------- Karte 3: Land im Detail ---------- */
+  const euDetail = { country: "Germany", ind: "sari", age: "total" };
+
+  function renderEuControls() {
+    const sel = document.getElementById("euCountrySelect");
+    const indBox = document.getElementById("euDetailIndicators");
+    const ageBox = document.getElementById("euDetailAges");
+    if (!sel || !indBox || !ageBox) return;
+    const pool = euCountries(euDetail.ind).filter((c) => c !== "EU/EEA");
+    if (pool.indexOf(euDetail.country) < 0) euDetail.country = pool[0] || "Germany";
+    sel.replaceChildren();
+    pool.forEach((c) => {
+      const o = document.createElement("option");
+      o.value = c;
+      o.textContent = euFlag(c) + euName(c);
+      if (c === euDetail.country) o.selected = true;
+      sel.appendChild(o);
+    });
+    indBox.replaceChildren();
+    const lbl = document.createElement("span");
+    lbl.className = "chip-group-label";
+    lbl.textContent = t("eu.trend.ind");
+    indBox.appendChild(lbl);
+    EU_INDICATORS.forEach((ind) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip" + (euDetail.ind === ind.key ? " active" : "");
+      b.textContent = t("eu.ind." + ind.key);
+      b.addEventListener("click", () => { euDetail.ind = ind.key; renderEurope(); });
+      indBox.appendChild(b);
+    });
+    ageBox.replaceChildren();
+    const ind = euInd(euDetail.ind);
+    if (ind.rates) {
+      const lbl2 = document.createElement("span");
+      lbl2.className = "chip-group-label";
+      lbl2.textContent = t("eu.detail.ages");
+      ageBox.appendChild(lbl2);
+      EU_AGES.forEach((a) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip" + (euDetail.age === a ? " active" : "");
+        b.textContent = a === "total" ? t("eu.age.total") : a;
+        b.addEventListener("click", () => { euDetail.age = a; renderEuDetail(); });
+        ageBox.appendChild(b);
+      });
+    }
+  }
+
+  function renderEuDetail() {
+    renderEuControls();
+    const box = document.getElementById("chart-eu-detail");
+    const note = document.getElementById("euDetailNote");
+    const legend = document.getElementById("euDetailLegend");
+    if (!box) return;
+    const age = euInd(euDetail.ind).rates ? euDetail.age : "total";
+    const bySeason = euSeries(euDetail.ind, euDetail.country, age);
+    if (!Object.keys(bySeason).length) {
+      box.replaceChildren();
+      box.appendChild(document.createTextNode(t("eu.nodata")));
+      if (legend) legend.replaceChildren();
+      if (note) note.textContent = "";
+      return;
+    }
+    const { series, shown } = renderSeasonChart(box, bySeason,
+      t("eu.ind." + euDetail.ind) + t("ariaSeason") + euName(euDetail.country));
+    if (legend) {
+      legend.replaceChildren();
+      shown.forEach((s, k) => {
+        const isLast = k === shown.length - 1;
+        const sp = document.createElement("span");
+        sp.style.color = isLast ? "#2a7fb8" : "#6a737c";
+        sp.style.fontWeight = isLast ? "700" : "400";
+        sp.textContent = "▬ " + s + (isLast ? t("modal.current") : "");
+        legend.appendChild(sp);
+      });
+    }
+    const last = series[series.length - 1].pts;
+    const lastPt = last[last.length - 1];
+    const lvl = euLevel(euDetail.ind, lastPt.value);
+    const unit = euThKey(euDetail.ind) === "pos" ? t("eu.unit.pos") : t("eu.unit." + euDetail.ind);
+    if (note) {
+      note.innerHTML = fill(t("eu.note"), {
+        w: t("weekPrefix") + lastPt.week, v: fmt.format(lastPt.value), u: unit,
+        c: lvl.color, l: lvl.label, u2: EU_SOURCE_URL, s: t("src.ecdc"),
+      });
+    }
+  }
+
+  /* ---------- Europa-Definitionstabelle ---------- */
+  function buildEuDefinition() {
+    const body = document.getElementById("euDefinitionBody");
+    if (!body) return;
+    const rows = [];
+    for (const key of ["ili", "sari", "ari", "pos"]) {
+      const th = EU_THRESHOLDS[key];
+      const ranges = [];
+      for (let i = 0; i < 6; i++) {
+        const lo = i === 0 ? 0 : th[i - 1];
+        const hi = i === 5 ? null : th[i];
+        ranges.push(hi === null ? t("def.from") + fmt.format(lo) : fmt.format(lo) + " – " + fmt.format(hi));
+      }
+      rows.push({ name: t("eu.def.metric." + key), ranges });
+    }
+    let html = "<p>" + t("eu.def.intro") + "</p><table><tr><th>" + t("eu.def.th") + "</th>" +
+      rows.map((r) => "<th>" + r.name + "</th>").join("") + "</tr>";
+    for (let i = 0; i < 6; i++) {
+      html += "<tr><td><span class='lvl-dot' style='background:" + LEVEL_COLORS[i] + "'></span>" +
+        t("levels")[i] + "</td>" +
+        rows.map((r) => "<td>" + r.ranges[i] + "</td>").join("") + "</tr>";
+    }
+    html += "</table>";
+    const mIli = euCountryMean("ili", "total");
+    const mSari = euCountryMean("sari", "total");
+    const euPos = EU.pos["EU/EEA"] && EU.pos["EU/EEA"].Influenza;
+    let pFlu = null;
+    if (euPos) {
+      const seasons = Object.keys(euPos).sort();
+      const pts = euPos[seasons[seasons.length - 1]];
+      if (pts && pts.length) pFlu = pts[pts.length - 1][1];
+    }
+    html += "<p class='chart-caption'>" + fill(t("eu.def.note"), {
+      w: EU_LATEST,
+      i: mIli ? euLevel("ili", mIli.value).label : "–",
+      s: mSari ? euLevel("sari", mSari.value).label : "–",
+      p: pFlu != null ? euLevel("pos-flu", pFlu).label : "–",
+    }) + "</p>";
+    body.innerHTML = html;
+  }
+
+  /* ---------- Europa gesamt rendern ---------- */
+  function renderEurope() {
+    euTrendFix();
+    renderEuBadge();
+    renderEuBars();
+    renderEuTrendChips();
+    renderEuTrend();
+    renderEuDetail();
+    buildEuDefinition();
+  }
+
+  /* ---------- Ansicht umschalten ---------- */
+  function setView(view) {
+    const eu = view === "eu";
+    document.getElementById("view-de").hidden = eu;
+    document.getElementById("view-eu").hidden = !eu;
+    document.getElementById("viewTabDe").classList.toggle("active", !eu);
+    document.getElementById("viewTabEu").classList.toggle("active", eu);
+    try { localStorage.setItem("rkiview", view); } catch (e) { /* egal */ }
+  }
+
+  function initEurope() {
+    euTrendFix();
+    document.getElementById("euCountrySelect").addEventListener("change", (e) => {
+      euDetail.country = e.target.value;
+      renderEuDetail();
+    });
+    document.getElementById("viewTabDe").addEventListener("click", () => setView("de"));
+    document.getElementById("viewTabEu").addEventListener("click", () => setView("eu"));
+    let start = "de";
+    try { if (localStorage.getItem("rkiview") === "eu") start = "eu"; } catch (e) { /* egal */ }
+    setView(start);
+    renderEurope();
+  }
+
   /* ---------- Modal ---------- */
   const modal = document.getElementById("modal");
   const modalChart = document.getElementById("modalChart");
@@ -529,7 +1081,8 @@
 
   function drawModal() {
     const cfg = CHARTS[currentKey];
-    const { series, shown } = renderSeasonChart(modalChart, currentKey, currentAge);
+    const { series, shown } = renderSeasonChart(modalChart, CHARTS[currentKey].get(currentAge) || {},
+      t("card." + currentKey) + t("ariaSeason") + currentAge);
     document.getElementById("modalSub").textContent =
       t("unit." + currentKey) + " · " + t("modal.ageLabel") +
       (currentAge === "00+" ? t("modal.ageAll") + " (00+)" : currentAge);
@@ -568,6 +1121,7 @@
     renderCharts();
     buildDefinition();
     setWeeks();
+    renderEurope();
     if (!modal.hidden) openModal(currentKey, currentAge);
   }
 
@@ -575,6 +1129,7 @@
   document.getElementById("langEn").addEventListener("click", () => setLang("en"));
 
   document.querySelectorAll(".chart-wrap").forEach((el) => {
+    if (!el.dataset.chart) return; // Europa-Karten haben eigenes Klickverhalten
     el.addEventListener("click", () => openModal(el.dataset.chart));
     el.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openModal(el.dataset.chart); }
@@ -589,6 +1144,7 @@
   renderCharts();
   buildDefinition();
   setWeeks();
+  initEurope();
   document.getElementById("langDe").classList.toggle("active", lang === "de");
   document.getElementById("langEn").classList.toggle("active", lang === "en");
 })();
