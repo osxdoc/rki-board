@@ -240,7 +240,7 @@
   function renderSixMonthChart(container, key) {
     const cfg = CHARTS[key];
     const { cur, prev, latest } = sixMonthSeries(cfg.get("00+"));
-    const W = 1000, H = 320, mL = 64, mR = 150, mT = 18, mB = 30;
+    const W = 1000, H = 320, mL = 64, mR = 16, mT = 18, mB = 30;
     const n = cur.length;
     const allVals = [cur].concat(prev).flat().map((p) => p.value);
     const yMax = niceMax(Math.max.apply(null, allVals) * 1.08);
@@ -263,7 +263,8 @@
       const xx = x(i);
       svg.appendChild(svgEl("line", { x1: xx, y1: mT, x2: xx, y2: H - mB,
         stroke: "#dfe3e7", "stroke-width": 1 }));
-      svg.appendChild(svgEl("text", { x: xx, y: H - mB + 16, "text-anchor": "middle",
+      svg.appendChild(svgEl("text", { x: xx, y: H - mB + 16,
+        "text-anchor": i === n - 1 ? "end" : "middle",
         "font-size": 11, fill: "#6a737c" }, t("weekPrefix") + cur[i].week));
     }
 
@@ -282,16 +283,17 @@
     svg.appendChild(svgEl("path", { d: pathFrom(curIdx, x, y), fill: "none",
       stroke: "#69bee0", "stroke-width": 3.2, "stroke-linejoin": "round" }));
 
-    // Letzter Punkt + Annotation
+    // Letzter Punkt + Annotation (innen, Ecke gegenüber dem Linienende)
     const last = curIdx[curIdx.length - 1];
     const lvl = levelOf(key, latest.value);
     svg.appendChild(svgEl("circle", { cx: x(last.i), cy: y(latest.value), r: 5,
       fill: "#69bee0", stroke: "#fff", "stroke-width": 1.6 }));
-    const ay = Math.min(Math.max(y(latest.value), mT + 14), H - mB - 14);
-    svg.appendChild(svgEl("text", { x: x(last.i) + 12, y: ay - 4, "font-size": 15,
-      "font-weight": 700, fill: lvl.color }, t("activity") + ":"));
-    svg.appendChild(svgEl("text", { x: x(last.i) + 12, y: ay + 14, "font-size": 15,
-      "font-weight": 700, fill: lvl.color }, lvl.label));
+    const top = y(latest.value) > mT + 48; // Linie endet tief -> Text nach oben
+    const y1 = top ? mT + 16 : H - mB - 30;
+    svg.appendChild(svgEl("text", { x: W - mR - 4, y: y1, "text-anchor": "end",
+      "font-size": 15, "font-weight": 700, fill: lvl.color }, t("activity") + ":"));
+    svg.appendChild(svgEl("text", { x: W - mR - 4, y: y1 + 20, "text-anchor": "end",
+      "font-size": 15, "font-weight": 700, fill: lvl.color }, lvl.label));
 
     container.replaceChildren(svg);
     renderSixMonthLegend(key, cur, prev);
