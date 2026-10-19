@@ -89,7 +89,7 @@ body{
 .icon-circle svg{width:32px;height:32px}
 .card h2{margin:0;font-size:26px;color:var(--ink)}
 
-.chart-wrap{cursor:pointer;border-radius:8px}
+.chart-wrap{cursor:pointer;border-radius:8px;position:relative}
 .chart-wrap:focus-visible{outline:3px solid var(--blue)}
 .chart svg{display:block;width:100%;height:auto}
 .chart-xlabels{
@@ -107,6 +107,22 @@ body{
 .chart-caption{
   color:#6a737c;font-size:13px;margin:10px 0 2px;
 }
+
+/* Mouseover-Tooltip: exakte Werte pro Woche */
+.chart-tip{
+  position:absolute;z-index:30;pointer-events:none;
+  transform:translate(-51%,-100%);
+  background:rgba(255,255,255,.97);border:1px solid #d5d9dd;border-radius:8px;
+  box-shadow:0 4px 14px rgba(20,30,40,.18);
+  padding:8px 11px;font-size:13px;color:#3c4650;white-space:nowrap;
+}
+.chart-tip[hidden]{display:none}
+.tip-title{font-weight:700;color:#1e2830;margin-bottom:4px}
+.tip-row{display:flex;align-items:center;gap:7px;line-height:1.5}
+.tip-bold{font-weight:700;color:#1e2830}
+.tip-sw{width:10px;height:10px;border-radius:2px;flex:none}
+.tip-flip{transform:translate(-100%,-100%)}
+
 
 /* Aktivitäts-Annotation im Diagramm */
 .annot{font-weight:700;font-size:15px}
@@ -164,6 +180,7 @@ body{
   padding:5px 14px;font-size:13px;cursor:pointer;color:#3c4650;
 }
 .modal-ages button.active{background:var(--blue-deep);border-color:var(--blue-deep);color:#fff}
+.modal-chart{position:relative}
 .modal-chart svg{display:block;width:100%;height:auto}
 .modal-xlabels{display:flex;justify-content:space-between;color:#5b6570;font-size:13px}
 .modal-legend{display:flex;gap:22px;flex-wrap:wrap;font-size:13px;color:#5b6570;margin-top:10px}

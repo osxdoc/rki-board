@@ -19,6 +19,7 @@
       "x.left": "vor 6 Monaten",
       "x.right": "aktuell",
       "legend.now": "(aktuell)",
+      "tip.now": "Aktuell",
       "card.are": "Erkrankungen der Atemwege",
       "card.ili": "Fälle mit Fieber",
       "card.sari": "Fälle im Krankenhaus",
@@ -70,6 +71,7 @@
       "x.left": "6 months ago",
       "x.right": "current",
       "legend.now": "(current)",
+      "tip.now": "Current",
       "card.are": "Respiratory diseases",
       "card.ili": "Cases with fever",
       "card.sari": "Hospitalised cases",
@@ -210,6 +212,65 @@
     return points.map((p, i) => (i ? "L" : "M") + x(p.i).toFixed(1) + " " + y(p.value).toFixed(1)).join(" ");
   }
 
+  /* ---------- Mouseover: Hilfslinie + Tooltip mit exakten Werten ---------- */
+  function attachHover(svg, wrap, cfg) {
+    const g = svgEl("g", { visibility: "hidden", "pointer-events": "none" });
+    const guide = svgEl("line", { y1: cfg.mT, y2: cfg.H - cfg.mB,
+      stroke: "#7d858d", "stroke-width": 1, "stroke-dasharray": "3 3" });
+    g.appendChild(guide);
+    svg.appendChild(g);
+    const tip = document.createElement("div");
+    tip.className = "chart-tip";
+    tip.hidden = true;
+    wrap.appendChild(tip);
+
+    function show(i, clientY) {
+      const data = cfg.rows(i);
+      guide.setAttribute("x1", cfg.x(i));
+      guide.setAttribute("x2", cfg.x(i));
+      const dots = data.rows.filter((r) => r.value != null)
+        .map((r) => svgEl("circle", { cx: cfg.x(i), cy: cfg.y(r.value), r: 4.5,
+          fill: r.color, stroke: "#fff", "stroke-width": 1.4 }));
+      g.replaceChildren(guide, ...dots);
+      g.setAttribute("visibility", "visible");
+      tip.replaceChildren();
+      const title = document.createElement("div");
+      title.className = "tip-title";
+      title.textContent = data.title;
+      tip.appendChild(title);
+      data.rows.forEach((r) => {
+        const row = document.createElement("div");
+        row.className = "tip-row" + (r.bold ? " tip-bold" : "");
+        const sw = document.createElement("span");
+        sw.className = "tip-sw";
+        sw.style.background = r.color;
+        row.appendChild(sw);
+        row.appendChild(document.createTextNode(r.label + "  " + (r.value == null ? "–" : fmt.format(r.value))));
+        tip.appendChild(row);
+      });
+      tip.hidden = false;
+      const r = svg.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+      const px = r.left - wr.left + (cfg.x(i) / cfg.W) * r.width;
+      const py = Math.min(Math.max(clientY - wr.top, 40), wr.height - 10);
+      tip.style.left = px + "px";
+      tip.style.top = py + "px";
+      tip.classList.toggle("tip-flip", px > r.width * 0.55);
+    }
+    function hide() {
+      g.setAttribute("visibility", "hidden");
+      tip.hidden = true;
+    }
+    svg.addEventListener("pointermove", (e) => {
+      const r = svg.getBoundingClientRect();
+      const sx = (e.clientX - r.left) * (cfg.W / r.width);
+      if (sx < cfg.mL - 6 || sx > cfg.W - cfg.mR + 6) { hide(); return; }
+      const i = Math.max(0, Math.min(cfg.n - 1,
+        Math.round(((sx - cfg.mL) / (cfg.W - cfg.mL - cfg.mR)) * (cfg.n - 1))));
+      show(i, e.clientY);
+    });
+    svg.addEventListener("pointerleave", hide);
+  }
+
   // Legende unter dem 6-Monats-Diagramm: welche Linie gehört zu welcher Saison
   function swatch(stroke, dash) {
     const s = svgEl("svg", { viewBox: "0 0 26 8", width: "26", height: "8", "aria-hidden": "true" });
@@ -296,6 +357,17 @@
       "font-size": 15, "font-weight": 700, fill: lvl.color }, lvl.label));
 
     container.replaceChildren(svg);
+    attachHover(svg, container, {
+      W, H, mL, mR, mT, mB, n, x, y,
+      rows: (i) => ({
+        title: t("weekPrefix") + cur[i].week,
+        rows: [{ color: "#69bee0", label: t("tip.now"), value: cur[i].value, bold: true }]
+          .concat(prev.map((pts, k) => (i < pts.length
+            ? { color: PREV_STYLE[k].stroke, label: pts[pts.length - 1].season, value: pts[i].value }
+            : null)).filter(Boolean)),
+      }),
+    });
+
     renderSixMonthLegend(key, cur, prev);
     return { latest, lvl };
   }
@@ -346,7 +418,23 @@
       path.appendChild(svgEl("title", {}, s.season));
       svg.appendChild(path);
     });
+
     container.replaceChildren(svg);
+    attachHover(svg, container, {
+      W, H, mL, mR, mT, mB, n: slots, x, y,
+      rows: (i) => {
+        const wk = series.map((s) => s.pts[i]).find((p) => p);
+        return {
+          title: wk ? t("weekPrefix") + wk.week : "",
+          rows: series.map((s, k) => (i < s.pts.length
+            ? { color: k === series.length - 1 ? "#69bee0" : grays[Math.min(k, grays.length - 1)],
+                label: s.season + (k === series.length - 1 ? t("modal.current") : ""),
+                value: s.pts[i].value }
+            : null)).filter(Boolean),
+        };
+      },
+    });
+
     return { series, shown };
   }
 
