@@ -1,0 +1,175 @@
+/* ===== Grundlayout: dunkler Seitenraum, weiße Mittelspalte ===== */
+:root{
+  --navy:#212f3e;
+  --navy-dark:#132434;
+  --ink:#1d2b3a;
+  --blue:#69bee0;
+  --blue-deep:#2a7fb8;
+  --gray-line:#c9cdd2;
+  --gray-sec:#b2b2b4;
+  --orange:#ea8338;
+  --lvl1:#00a651; /* sehr niedrig */
+  --lvl2:#a6c80a; /* niedrig */
+  --lvl3:#ea8338; /* moderat */
+  --lvl4:#e8541e; /* erhöht */
+  --lvl5:#d1231b; /* hoch */
+  --lvl6:#8e0e0e; /* sehr hoch */
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--navy);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--ink);
+}
+
+/* ===== Kopfzeile ===== */
+.topbar{background:var(--navy-dark);border-bottom:1px solid #2e4256}
+.topbar-inner{
+  max-width:1110px;margin:0 auto;padding:14px 24px 10px;
+  display:flex;align-items:baseline;gap:14px;
+}
+.brand-pill{
+  background:#fff;color:var(--navy-dark);font-weight:800;font-size:13px;
+  letter-spacing:.06em;padding:3px 10px;border-radius:3px;
+}
+.topbar-label{color:#e8ebef;font-size:20px;font-weight:600}
+.lang-toggle{margin-left:auto;display:flex;gap:6px;align-items:center}
+.lang-btn{
+  background:transparent;border:1px solid #4a5f73;color:#cfd6dd;
+  font-size:12px;font-weight:700;letter-spacing:.05em;
+  padding:3px 10px;border-radius:3px;cursor:pointer;
+}
+.lang-btn:hover{border-color:#fff;color:#fff}
+.lang-btn.active{background:#fff;color:var(--navy-dark);border-color:#fff}
+
+/* ===== Mittelspalte ===== */
+.column{
+  background:#fff;max-width:1110px;margin:0 auto;
+  padding:0 44px 40px;border-radius:0 0 10px 10px;
+}
+
+/* Hero-Leiste */
+.hero{
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  padding:26px 0 8px;border-bottom:1px solid #e4e7ea;
+}
+.hero-pill{
+  background:#a5aaae;color:#fff;font-weight:700;font-size:13px;
+  letter-spacing:.05em;padding:5px 16px;border-radius:4px;
+}
+.hero-text{margin:0;font-size:17px;color:#3c4650}
+
+/* Titel */
+.page-title{
+  margin:34px 0 18px;font-size:44px;line-height:1.12;
+  text-transform:uppercase;letter-spacing:.01em;color:var(--ink);
+}
+
+/* Aktivitäts-Badge */
+.activity-badge{
+  display:inline-block;background:var(--orange);color:#fff;
+  font-weight:700;font-size:15px;padding:6px 16px;border-radius:4px;
+  margin:6px 0 18px;
+}
+.intro{font-size:16px;line-height:1.55;color:#3c4650;max-width:900px;margin:0 0 30px}
+
+/* ===== Karten ===== */
+.card{
+  border:1px solid #e4e7ea;border-radius:10px;
+  padding:26px 28px 20px;margin:26px 0;
+  box-shadow:0 1px 3px rgba(20,35,50,.06);
+}
+.card-head{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.icon-circle{
+  width:56px;height:56px;border-radius:50%;flex:0 0 56px;
+  background:#e3f3fa;color:#71c0de;
+  display:flex;align-items:center;justify-content:center;
+}
+.icon-circle svg{width:32px;height:32px}
+.card h2{margin:0;font-size:26px;color:var(--ink)}
+
+.chart-wrap{cursor:pointer;border-radius:8px}
+.chart-wrap:focus-visible{outline:3px solid var(--blue)}
+.chart svg{display:block;width:100%;height:auto}
+.chart-xlabels{
+  display:flex;justify-content:space-between;
+  color:#5b6570;font-size:14px;margin-top:2px;
+}
+.chart-legend{
+  display:flex;gap:26px;justify-content:center;
+  font-size:14px;color:#5b6570;margin-top:8px;
+}
+.lg-now{color:var(--blue-deep);font-weight:600}
+.lg-prev{color:#9aa1a8}
+.chart-caption{
+  color:#6a737c;font-size:13px;margin:10px 0 2px;
+}
+
+/* Aktivitäts-Annotation im Diagramm */
+.annot{font-weight:700;font-size:15px}
+
+/* Definition */
+.definition{margin-top:14px;border-top:1px solid #e4e7ea;padding-top:12px}
+.definition summary{
+  cursor:pointer;color:var(--blue-deep);font-weight:600;font-size:16px;
+  list-style:none;
+}
+.definition summary::before{content:"» ";color:var(--blue-deep)}
+.definition[open] summary::before{content:"« "}
+.definition-body{margin-top:12px;font-size:14px;color:#3c4650}
+.definition-body table{border-collapse:collapse;width:100%;max-width:760px}
+.definition-body th,.definition-body td{
+  border:1px solid #d8dcdf;padding:6px 10px;text-align:left;font-size:13px;
+}
+.definition-body th{background:#f2f4f6}
+.lvl-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+
+/* ===== Quellen (grauer Abschnitt) ===== */
+.sources{
+  background:var(--gray-sec);border-radius:8px;
+  padding:22px 28px;margin-top:34px;color:#22303d;
+}
+.sources h3{margin:0 0 10px;font-size:18px;text-transform:uppercase;letter-spacing:.04em}
+.sources ul{margin:0;padding-left:20px}
+.sources li{margin:7px 0;font-size:14px;line-height:1.5}
+.sources a{color:#14344e;font-weight:600}
+
+/* ===== Fußbereich ===== */
+.footer{background:var(--navy-dark);color:#cfd6dd;padding:26px 24px}
+.footer p{max-width:1110px;margin:0 auto;font-size:14px;line-height:1.6}
+
+/* ===== Modal ===== */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(15,25,35,.62);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;z-index:50;
+}
+.modal-backdrop[hidden]{display:none}
+.modal{
+  background:#fff;border-radius:12px;max-width:980px;width:100%;
+  max-height:92vh;overflow:auto;padding:28px 30px;position:relative;
+}
+.modal-close{
+  position:absolute;top:12px;right:16px;border:0;background:none;
+  font-size:30px;line-height:1;color:#5b6570;cursor:pointer;
+}
+.modal h3{margin:0 0 4px;font-size:24px}
+.modal-sub{margin:0 0 14px;color:#5b6570;font-size:14px}
+.modal-ages{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.modal-ages button{
+  border:1px solid #c9cdd2;background:#f2f4f6;border-radius:16px;
+  padding:5px 14px;font-size:13px;cursor:pointer;color:#3c4650;
+}
+.modal-ages button.active{background:var(--blue-deep);border-color:var(--blue-deep);color:#fff}
+.modal-chart svg{display:block;width:100%;height:auto}
+.modal-xlabels{display:flex;justify-content:space-between;color:#5b6570;font-size:13px}
+.modal-legend{display:flex;gap:22px;flex-wrap:wrap;font-size:13px;color:#5b6570;margin-top:10px}
+.modal-note{font-size:13px;color:#6a737c;margin:12px 0 0}
+
+@media (max-width:760px){
+  .column{padding:0 18px 30px}
+  .page-title{font-size:30px}
+  .card{padding:18px 14px}
+  .card h2{font-size:20px}
+}

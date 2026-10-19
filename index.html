@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atemwegserkrankungen im Überblick</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- Dunkle Kopfzeile wie im Foto -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <span class="brand-pill">RKI</span>
+    <span class="topbar-label" data-i18n="topbar.label">Details:</span>
+    <span class="lang-toggle" role="group" aria-label="Sprache / Language">
+      <button type="button" class="lang-btn" id="langDe" lang="de">DE</button>
+      <button type="button" class="lang-btn" id="langEn" lang="en">EN</button>
+    </span>
+  </div>
+</header>
+
+<main class="column">
+
+  <!-- Hero-Leiste -->
+  <div class="hero">
+    <span class="hero-pill" data-i18n="hero.pill">Datenlage</span>
+    <p class="hero-text" data-i18n="hero.text">Klicken Sie auf die Grafiken für die Details:</p>
+  </div>
+
+  <!-- Titel -->
+  <h1 class="page-title" data-i18n-html="title.html">Atemwegserkrankungen im<br>Überblick</h1>
+
+  <!-- Zentrale Aktivitäts-Badge -->
+  <div class="activity-badge" id="overallBadge">Aktivität: …</div>
+
+  <p class="intro" data-i18n-html="intro.html">
+    Die folgenden Grafiken zeigen die wöchentliche Aktivität von Atemwegserkrankungen
+    in Deutschland – von <em>sehr niedrig</em> bis <em>sehr hoch</em>. Stand:
+    <strong id="latestWeek">–</strong>, Datenquelle: Robert Koch-Institut (RKI).
+  </p>
+
+  <!-- Karte 1: Erkrankungen der Atemwege -->
+  <section class="card" id="card-are">
+    <div class="card-head">
+      <span class="icon-circle" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 3.5v6.2m0 0c-.6-1.6-2-2.6-3.6-2.6-2 0-3.4 1.5-3.9 3.6-.4 1.9-.6 4-.6 6 0 2.2 1.3 3.8 3.2 3.8 1.6 0 2.9-1.2 3.9-2.9.7-1.2 1-2.6 1-4.1V9.7m0 0c.6-1.6 2-2.6 3.6-2.6 2 0 3.4 1.5 3.9 3.6.4 1.9.6 4 .6 6 0 2.2-1.3 3.8-3.2 3.8-1.6 0-2.9-1.2-3.9-2.9-.7-1.2-1-2.6-1-4.1v-3.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <h2 data-i18n="card.are">Erkrankungen der Atemwege</h2>
+    </div>
+    <div class="chart-wrap" data-chart="are" role="button" tabindex="0" title="Klicken für Details">
+      <div class="chart" id="chart-are"></div>
+      <div class="chart-xlabels"><span data-i18n="x.left">vor 6 Monaten</span><span data-i18n="x.right">aktuell</span></div>
+      <p class="chart-caption" data-i18n="cap.are">ARE-Inzidenz (GrippeWeb): Erkrankte pro 100.000 Einwohner pro Woche, alle Altersgruppen. Quelle: RKI</p>
+    </div>
+  </section>
+
+  <!-- Karte 2: Fälle mit Fieber -->
+  <section class="card" id="card-ili">
+    <div class="card-head">
+      <span class="icon-circle" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 8.5v6.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.6" fill="currentColor"/></svg>
+      </span>
+      <h2 data-i18n="card.ili">Fälle mit Fieber</h2>
+    </div>
+    <div class="chart-wrap" data-chart="ili" role="button" tabindex="0" title="Klicken für Details">
+      <div class="chart" id="chart-ili"></div>
+      <div class="chart-xlabels"><span data-i18n="x.left">vor 6 Monaten</span><span data-i18n="x.right">aktuell</span></div>
+      <p class="chart-caption" data-i18n="cap.ili">ILI-Inzidenz (GrippeWeb): Fälle mit grippeähnlicher Symptomatik inkl. Fieber pro 100.000 Einwohner pro Woche. Quelle: RKI</p>
+    </div>
+  </section>
+
+  <!-- Karte 3: Fälle im Krankenhaus -->
+  <section class="card" id="card-sari">
+    <div class="card-head">
+      <span class="icon-circle" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 15h18M6 10V7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v3M3 18v2m18-2v2M12 7.5v3m-1.5-1.5h3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <h2 data-i18n="card.sari">Fälle im Krankenhaus</h2>
+    </div>
+    <div class="chart-wrap" data-chart="sari" role="button" tabindex="0" title="Klicken für Details">
+      <div class="chart" id="chart-sari"></div>
+      <div class="chart-legend"><span class="lg-now" data-i18n="lg.now">— Aktuell</span><span class="lg-prev" data-i18n="lg.prev">— Vorjahre</span></div>
+      <div class="chart-xlabels"><span data-i18n="x.left">vor 6 Monaten</span><span data-i18n="x.right">aktuell</span></div>
+      <p class="chart-caption" data-i18n="cap.sari">SARI-Hospitalisierungsinzidenz: Einweisungen wegen schwerer akuter respiratorischer Infektionen pro 100.000 Einwohner pro Woche. Quelle: RKI</p>
+    </div>
+    <details class="definition">
+      <summary data-i18n="def.summary">Wie ist sehr niedrige bis sehr hohe Aktivität definiert?</summary>
+      <div class="definition-body" id="definitionBody"></div>
+    </details>
+  </section>
+
+  <!-- Quellen -->
+  <section class="sources">
+    <h3 data-i18n="sources.h3">Quellen</h3>
+    <ul>
+      <li data-i18n-html="sources.li1">
+        <a href="https://github.com/robert-koch-institut/GrippeWeb_Daten_des_Wochenberichts" target="_blank" rel="noopener">
+          GrippeWeb – Daten des Wochenberichts (GitHub, RKI)</a> – wöchentliche ARE-/ILI-Inzidenzen;
+        <a href="https://doi.org/10.5281/zenodo.23387473" target="_blank" rel="noopener">Zenodo DOI 10.5281/zenodo.23387473</a>
+      </li>
+      <li data-i18n-html="sources.li2">
+        <a href="https://github.com/robert-koch-institut/SARI-Hospitalisierungsinzidenz" target="_blank" rel="noopener">
+          SARI-Hospitalisierungsinzidenz (GitHub, RKI)</a> – wöchentliche Krankenhaus-Einweisungen;
+        <a href="https://doi.org/10.5281/zenodo.23387480" target="_blank" rel="noopener">Zenodo DOI 10.5281/zenodo.23387480</a>
+      </li>
+      <li data-i18n-html="sources.li3">
+        <a href="https://github.com/robert-koch-institut/ARE-Konsultationsinzidenz" target="_blank" rel="noopener">
+          ARE-Konsultationsinzidenz (GitHub, RKI)</a> – ambulante Konsultationen aus dem ARE-Praxis-Sentinel
+      </li>
+      <li data-i18n-html="sources.li4">
+        <a href="https://www.rki.de/DE/Themen/Infektionskrankheiten/Akute-respiratorische-Erkrankungen/Dashboard_Daten.html" target="_blank" rel="noopener">
+          RKI-Dashboard: Akute respiratorische Erkrankungen – ARE-Dashboard und weitere Daten</a>
+      </li>
+    </ul>
+  </section>
+</main>
+
+<!-- Dunkler Fußbereich -->
+<footer class="footer">
+  <p data-i18n-html="footer.html">Daten: Robert Koch-Institut (RKI) · GrippeWeb · SARI-Sentinel · Stand: <span id="footerWeek">–</span> ·
+     Diese Seite ist eine Nachbildung auf Basis der offenen RKI-Daten.</p>
+</footer>
+
+<!-- Detail-Modal -->
+<div class="modal-backdrop" id="modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" id="modalClose" aria-label="Schließen">×</button>
+    <h3 id="modalTitle">–</h3>
+    <p class="modal-sub" id="modalSub">–</p>
+    <div class="modal-ages" id="modalAges"></div>
+    <div class="modal-chart" id="modalChart"></div>
+    <div class="modal-xlabels"><span data-i18n="modal.xleft">Saisonbeginn (KW&nbsp;40)</span><span data-i18n="x.right">aktuell</span></div>
+    <div class="modal-legend" id="modalLegend"></div>
+    <p class="modal-note" id="modalNote"></p>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

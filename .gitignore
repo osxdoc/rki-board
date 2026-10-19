@@ -1,0 +1,16 @@
+# Entwicklungsumgebung / Assistent – nicht für GitHub Pages
+node_modules/
+.wrangler/
+.ocr/
+.localc/
+public/
+package.json
+package-lock.json
+
+# Foto- und Screenshot-Artefakte der Rekonstruktion
+/*.png
+/*.jpeg
+.DS_Store
+
+# OCR-Werkzeug der Foto-Rekonstruktion (Trainingsdaten, Crops)
+ocrtool/
