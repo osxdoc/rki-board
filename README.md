@@ -6,8 +6,9 @@ automatischer Datenaktualisierung.
 
 ## Live
 
-- GitHub Pages: `https://<user>.github.io/<repo>/` (einmal unter
-  *Settings → Pages → Deploy from a branch → `main` / `(root)`* aktivieren)
+- **Website:** <https://osxdoc.github.io/rki-board/>
+- **Repository:** <https://github.com/osxdoc/rki-board>
+- Pages einmalig aktivieren: *Settings → Pages → Deploy from a branch → `main` / `(root)`*
 
 ## Aufbau
 
