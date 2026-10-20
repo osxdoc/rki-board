@@ -81,6 +81,7 @@
       "eu.sources.li2": "<a href=\"https://www.ecdc.europa.eu/en/publications-data/european-respiratory-virus-surveillance-summary-erviss\" target=\"_blank\" rel=\"noopener\">ECDC: European Respiratory Virus Surveillance Summary (ERVISS)</a>",
       "eu.sources.li3": "<a href=\"https://erviss.org/\" target=\"_blank\" rel=\"noopener\">erviss.org – interaktives ECDC-Dashboard</a>",
       "eu.badge": "Stand: {w} · Ø ILI {v} → {l}",
+      "eu.badgeAsof": "Stand: {w}",
       "eu.trend.ind": "Indikator:",
       "eu.trend.countries": "Länder:",
       "eu.detail.ages": "Altersgruppe:",
@@ -176,6 +177,7 @@
       "eu.sources.li2": "<a href=\"https://www.ecdc.europa.eu/en/publications-data/european-respiratory-virus-surveillance-summary-erviss\" target=\"_blank\" rel=\"noopener\">ECDC: European Respiratory Virus Surveillance Summary (ERVISS)</a>",
       "eu.sources.li3": "<a href=\"https://erviss.org/\" target=\"_blank\" rel=\"noopener\">erviss.org – interactive ECDC dashboard</a>",
       "eu.badge": "As of: {w} · Ø ILI {v} → {l}",
+      "eu.badgeAsof": "As of {w}",
       "eu.trend.ind": "Indicator:",
       "eu.trend.countries": "Countries:",
       "eu.detail.ages": "Age group:",
@@ -249,6 +251,13 @@
 
   function seasonKey(s) { return parseInt(s.split("/")[0], 10); }
 
+  // Kalender-Reihenfolge einer Woche (fortlaufend, auch über den Saisonwechsel
+  // KW 39 -> KW 40 hinweg): Kalenderjahr * 53 + KW
+  function weekOrder(p) {
+    const calYear = p.week >= 40 ? seasonKey(p.season) : seasonKey(p.season) + 1;
+    return calYear * 53 + p.week;
+  }
+
   // Vergleichslinien der Vorjahre: dunkler = neuer; Strichart zusätzlich (Barrierefreiheit)
   const PREV_STYLE = [
     { stroke: "#98a0a8", dash: "none" },
@@ -271,10 +280,23 @@
     const all = chrono(bySeason);
     const i = all.length - 1;
     const cur = all.slice(Math.max(0, i - 25), i + 1);
+    // Vorjahresfenster über dieselben Kalenderwochen (nicht Index −52):
+    // Saisons mit 53 Wochen (z. B. 2015/16, 2020/21) würden die
+    // Vergleichslinien sonst um eine Woche verschieben.
+    const calYear = (p) => (p.week >= 40 ? seasonKey(p.season) : seasonKey(p.season) + 1);
+    const map = {};
+    all.forEach((p) => { map[calYear(p) * 100 + p.week] = p; });
     const prev = [];
     for (let k = 1; k <= 3; k++) {
-      const end = i - 52 * k;
-      if (end - 25 >= 0) prev.push(all.slice(end - 25, end + 1));
+      const pts = cur.map((p) => {
+        const q = map[(calYear(p) - k) * 100 + p.week];
+        return q ? { value: q.value, season: q.season } : null;
+      });
+      const hit = pts.filter((q) => q);
+      if (!hit.length) continue;
+      // Label = Saison des letzten Treffers (endet am selben KW-Punkt wie cur)
+      prev.push({ pts: pts.map((q) => (q ? q.value : null)),
+        label: hit[hit.length - 1].season });
     }
     return { cur, prev, latest: all[i] };
   }
@@ -295,7 +317,14 @@
   }
 
   function pathFrom(points, x, y) {
-    return points.map((p, i) => (i ? "L" : "M") + x(p.i).toFixed(1) + " " + y(p.value).toFixed(1)).join(" ");
+    // Lücken (value == null) unterbrechen die Linie, statt sie zu verbinden
+    let d = "", pen = false;
+    points.forEach((p) => {
+      if (!p || p.value == null) { pen = false; return; }
+      d += (pen ? "L" : "M") + x(p.i).toFixed(1) + " " + y(p.value).toFixed(1) + " ";
+      pen = true;
+    });
+    return d.trim();
   }
 
   /* ---------- Mouseover: Hilfslinie + Tooltip mit exakten Werten ---------- */
@@ -377,9 +406,9 @@
       box.appendChild(sp);
     };
     mk("#69bee0", "none", cur[cur.length - 1].season + " " + t("legend.now"), "lg-now");
-    prev.forEach((pts, k) => {
+    prev.forEach((pr, k) => {
       const st = PREV_STYLE[Math.min(k, PREV_STYLE.length - 1)];
-      mk(st.stroke, st.dash, pts[pts.length - 1].season, "lg-prev");
+      mk(st.stroke, st.dash, pr.label, "lg-prev");
     });
   }
 
@@ -389,8 +418,9 @@
     const { cur, prev, latest } = sixMonthSeries(cfg.get("00+"));
     const W = 1000, H = 320, mL = 64, mR = 16, mT = 18, mB = 30;
     const n = cur.length;
-    const allVals = [cur].concat(prev).flat().map((p) => p.value);
-    const yMax = niceMax(Math.max.apply(null, allVals) * 1.08);
+    const allVals = cur.map((p) => p.value)
+      .concat(prev.flatMap((pr) => pr.pts)).filter((v) => v != null);
+    const yMax = niceMax(Math.max.apply(null, allVals.concat([1])) * 1.08);
     const x = (i) => mL + (i / (n - 1)) * (W - mL - mR);
     const y = (v) => H - mB - (v / yMax) * (H - mT - mB);
 
@@ -415,13 +445,13 @@
         "font-size": 11, fill: "#6a737c" }, t("weekPrefix") + cur[i].week));
     }
 
-    // Vorjahre (grau abgestuft, mit Hover-Titel "Saison")
-    prev.forEach((pts, k) => {
+    // Vorjahre (grau abgestuft, gleiche Kalenderwochen, Lücken = keine Meldung)
+    prev.forEach((pr, k) => {
       const st = PREV_STYLE[Math.min(k, PREV_STYLE.length - 1)];
-      const indexed = pts.map((p, i) => Object.assign({ i }, p));
-      const path = svgEl("path", { d: pathFrom(indexed, x, y), fill: "none",
+      const pts = pr.pts.map((v, i) => ({ i, value: v }));
+      const path = svgEl("path", { d: pathFrom(pts, x, y), fill: "none",
         stroke: st.stroke, "stroke-width": 1.8, "stroke-dasharray": st.dash });
-      path.appendChild(svgEl("title", {}, pts[pts.length - 1].season));
+      path.appendChild(svgEl("title", {}, pr.label));
       svg.appendChild(path);
     });
 
@@ -448,9 +478,9 @@
       rows: (i) => ({
         title: t("weekPrefix") + cur[i].week,
         rows: [{ color: "#69bee0", label: t("tip.now"), value: cur[i].value, bold: true }]
-          .concat(prev.map((pts, k) => (i < pts.length
-            ? { color: PREV_STYLE[k].stroke, label: pts[pts.length - 1].season, value: pts[i].value }
-            : null)).filter(Boolean)),
+          .concat(prev.map((pr, k) => ({
+            color: PREV_STYLE[Math.min(k, PREV_STYLE.length - 1)].stroke,
+            label: pr.label, value: pr.pts[i] }))),
       }),
     });
 
@@ -482,10 +512,12 @@
       svg.appendChild(svgEl("text", { x: mL - 8, y: yy + 4, "text-anchor": "end",
         "font-size": 12, fill: "#6a737c" }, fmt.format(Math.round(v))));
     }
-    // X-Achse: Monats-Ticks (grobe Orientierung über KW-Position)
-    const monthTicks = [[0, 9, 18, 27, 36, 45]];
+    // X-Achse: Monatsanfang auf der KW-40-bis-39-Achse
+    // Okt = KW 40 (i 0), Nov ≈ KW 44 (4), Dez ≈ KW 48 (8), Jan ≈ KW 1 (13),
+    // Feb ≈ KW 5 (18), Mär ≈ KW 9 (22)
+    const monthTicks = [0, 4, 8, 13, 18, 22];
     const monthLabels = t("months");
-    monthTicks[0].forEach((i, k) => {
+    monthTicks.forEach((i, k) => {
       svg.appendChild(svgEl("line", { x1: x(i), y1: mT, x2: x(i), y2: H - mB,
         stroke: "#dfe3e7", "stroke-width": 1 }));
       svg.appendChild(svgEl("line", { x1: x(i), y1: H - mB, x2: x(i), y2: H - mB + 4,
@@ -532,7 +564,7 @@
     document.querySelectorAll("[data-i18n-html]").forEach((el) => {
       el.innerHTML = t(el.dataset.i18nHtml);
     });
-    document.querySelectorAll(".chart-wrap").forEach((el) => { el.title = t("chart.click"); });
+    document.querySelectorAll(".chart-wrap[data-chart]").forEach((el) => { el.title = t("chart.click"); });
     document.getElementById("modalClose").setAttribute("aria-label", t("modal.close"));
   }
 
@@ -585,7 +617,7 @@
   }
 
   /* ---------- Europa: ECDC ERVISS ---------- */
-  const EU = window.EUROPE_DATA || { sari: {}, ili: {}, ari: {}, pos: {}, sev: {}, latest: null };
+  const EU = window.EUROPE_DATA || { sari: {}, ili: {}, ari: {}, pos: {}, latest: null };
   const EU_LATEST = EU.latest || "–";
   const EU_SOURCE_URL = "https://github.com/EU-ECDC/Respiratory_viruses_weekly_data";
 
@@ -656,6 +688,46 @@
     return all.length ? all[all.length - 1] : null;
   }
 
+  // Neueste Kalenderwoche ({cy, week}), die irgendein Land dieses Indikators
+  // in den letzten Wochen gemeldet hat
+  function euLastWeekAcross(indKey) {
+    let best = null;
+    for (const c of euCountries(indKey)) {
+      const p = euLastPoint(indKey, c, "total");
+      if (!p) continue;
+      const w = { o: weekOrder(p), cy: p.week >= 40 ? seasonKey(p.season) : seasonKey(p.season) + 1, week: p.week };
+      if (!best || w.o > best.o) best = w;
+    }
+    if (!best) return null;
+    const cutoff = { o: best.o - 6 };
+    let cut = null;
+    for (const c of euCountries(indKey)) {
+      const p = euLastPoint(indKey, c, "total");
+      if (!p) continue;
+      const w = { o: weekOrder(p), cy: p.week >= 40 ? seasonKey(p.season) : seasonKey(p.season) + 1, week: p.week };
+      if (w.o < cutoff.o) continue;
+      if (!cut || w.o > cut.o) cut = w;
+    }
+    return cut || best;
+  }
+
+  // n Kalender-Kacheln (Jahr*100+KW) endend bei {cy, week}, älteste zuerst
+  function isoWeeksInYear(y) {
+    const a = new Date(Date.UTC(y, 0, 1)).getUTCDay();
+    const b = new Date(Date.UTC(y, 11, 31)).getUTCDay();
+    return (a === 4 || b === 4) ? 53 : 52;
+  }
+  function euCalendarWeeks(end, n) {
+    const out = [];
+    let cy = end.cy, wk = end.week;
+    for (let i = 0; i < n; i++) {
+      out.push(cy * 100 + wk);
+      wk -= 1;
+      if (wk === 0) { cy -= 1; wk = isoWeeksInYear(cy); }
+    }
+    return out.reverse();
+  }
+
   function euThKey(indKey) { return indKey.indexOf("pos") === 0 ? "pos" : indKey; }
   function euLevel(indKey, v) {
     const th = EU_THRESHOLDS[euThKey(indKey)];
@@ -671,7 +743,7 @@
       if (c === "EU/EEA") continue;
       const p = euLastPoint(indKey, c, age);
       if (p) {
-        if (!week || p.season + p.week > week) week = p.season + p.week;
+        if (!week || weekOrder(p) > week.o) { week = { o: weekOrder(p), t: t("weekPrefix") + p.week + " " + p.season }; }
         vals.push(p.value);
       }
     }
@@ -684,7 +756,7 @@
     const badge = document.getElementById("euBadge");
     if (!badge) return;
     const mean = euCountryMean("ili", "total");
-    if (!mean) { badge.textContent = "Stand: " + EU_LATEST; badge.style.background = "#6a737c"; return; }
+    if (!mean) { badge.textContent = fill(t("eu.badgeAsof"), { w: EU_LATEST }); badge.style.background = "#6a737c"; return; }
     const lvl = euLevel("ili", mean.value);
     badge.textContent = fill(t("eu.badge"), { w: EU_LATEST, v: fmt.format(mean.value), l: lvl.label });
     badge.style.background = lvl.color;
@@ -758,9 +830,14 @@
     const pool = euTrendPool();
     euTrend.countries = euTrend.countries.filter((c) => pool.indexOf(c) >= 0);
     if (euTrend.countries.length === 0) {
-      // Top 5 nach letztem Wert als sinnvolle Vorauswahl
-      const ranked = pool.map((c) => ({ c, p: euLastPoint(euTrend.ind, c, "total") }))
-        .filter((r) => r.p).sort((a, b) => b.p.value - a.p.value).slice(0, 5);
+      // Top 5 nach letztem Wert – aber nur Länder, die in den letzten
+      // Wochen gemeldet haben, sonst dominiert eine veraltete Serie
+      const cand = pool.map((c) => ({ c, p: euLastPoint(euTrend.ind, c, "total") }))
+        .filter((r) => r.p);
+      const best = Math.max.apply(null, cand.map((r) => weekOrder(r.p)));
+      const recent = cand.filter((r) => weekOrder(r.p) >= best - 6);
+      const ranked = (recent.length ? recent : cand)
+        .sort((a, b) => b.p.value - a.p.value).slice(0, 5);
       euTrend.countries = ranked.map((r) => r.c);
     }
   }
@@ -811,13 +888,20 @@
   function renderEuTrend() {
     const box = document.getElementById("chart-eu-trend");
     if (!box) return;
-    const series = euTrend.countries.map((c) => {
-      const all = chrono(euSeries(euTrend.ind, c, "total"));
-      return { country: c, pts: all.slice(-26) };
-    }).filter((s) => s.pts.length);
-    const n = Math.max.apply(null, series.map((s) => s.pts.length).concat([2]));
+    // Kalender-Kacheln: letzte 26 KWs (KW 40..53, dann 1..39 der laufenden Saison)
+    const last = euLastWeekAcross(euTrend.ind);
+    const weeks = last ? euCalendarWeeks(last, 26) : [];
+    const n = weeks.length || 2;
+    const weekIx = {};
+    weeks.forEach((k, i) => { weekIx[k] = i; });
     const W = 1000, H = 320, mL = 64, mR = 16, mT = 18, mB = 30;
-    const allVals = series.flatMap((s) => s.pts.map((p) => p.value));
+    const series = euTrend.countries.map((c) => {
+      const map = {};
+      chrono(euSeries(euTrend.ind, c, "total"))
+        .forEach((p) => { map[(p.week >= 40 ? seasonKey(p.season) : seasonKey(p.season) + 1) * 100 + p.week] = p.value; });
+      return { country: c, vals: weeks.map((k) => (map[k] == null ? null : map[k])) };
+    }).filter((s) => s.vals.some((v) => v != null));
+    const allVals = series.flatMap((s) => s.vals).filter((v) => v != null);
     const yMax = niceMax(Math.max.apply(null, allVals.concat([1])) * 1.08);
     const x = (i) => mL + (i / (n - 1)) * (W - mL - mR);
     const y = (v) => H - mB - (v / yMax) * (H - mT - mB);
@@ -831,41 +915,37 @@
       svg.appendChild(svgEl("text", { x: mL - 8, y: yy + 4, "text-anchor": "end",
         "font-size": 12, fill: "#6a737c" }, fmt.format(Math.round(v))));
     }
-    // Zeitachse: Wochen der längsten Reihe (letzte n Wochen)
+    // Zeitachse: Beschriftung alle 4 Wochen (KW der Kalender-Kachel)
     for (let i = n - 1; i >= 0; i -= 4) {
       const xx = x(i);
       svg.appendChild(svgEl("line", { x1: xx, y1: mT, x2: xx, y2: H - mB,
         stroke: "#dfe3e7", "stroke-width": 1 }));
-      // Beschriftung: Woche der längsten Reihe an Position i (von rechts gezählt)
-      const ref = series.map((s) => s.pts[s.pts.length - n + i]).find((p) => p);
       svg.appendChild(svgEl("text", { x: xx, y: H - mB + 16,
         "text-anchor": i === n - 1 ? "end" : "middle",
-        "font-size": 11, fill: "#6a737c" }, ref ? t("weekPrefix") + ref.week : ""));
+        "font-size": 11, fill: "#6a737c" }, weeks[i] ? t("weekPrefix") + (weeks[i] % 100) : ""));
     }
     series.forEach((s, k) => {
       const color = EU_COLORS[k % EU_COLORS.length];
-      const offset = n - s.pts.length; // Reihen enden in unterschiedlichen Wochen
-      const idx = s.pts.map((p, i) => ({ i: i + offset, value: p.value }));
-      const path = svgEl("path", { d: pathFrom(idx, x, y), fill: "none",
+      const pts = s.vals.map((v, i) => ({ i, value: v }));
+      const path = svgEl("path", { d: pathFrom(pts, x, y), fill: "none",
         stroke: color, "stroke-width": 2.4, "stroke-linejoin": "round" });
       path.appendChild(svgEl("title", {}, euName(s.country)));
       svg.appendChild(path);
-      const last = s.pts[s.pts.length - 1];
-      svg.appendChild(svgEl("circle", { cx: x(n - 1), cy: y(last.value), r: 4,
-        fill: color, stroke: "#fff", "stroke-width": 1.4 }));
+      let li = -1;
+      s.vals.forEach((v, i) => { if (v != null) li = i; });
+      if (li >= 0) {
+        svg.appendChild(svgEl("circle", { cx: x(li), cy: y(s.vals[li]), r: 4,
+          fill: color, stroke: "#fff", "stroke-width": 1.4 }));
+      }
     });
     box.replaceChildren(svg);
     attachHover(svg, box, {
       W, H, mL, mR, mT, mB, n, x, y,
       rows: (i) => ({
-        title: (() => {
-          const ref = series.map((s) => s.pts[s.pts.length - n + i]).find((p) => p);
-          return ref ? t("weekPrefix") + ref.week : "";
-        })(),
-        rows: series.map((s, k) => {
-          const p = s.pts[s.pts.length - n + i];
-          return p ? { color: EU_COLORS[k % EU_COLORS.length], label: euName(s.country), value: p.value } : null;
-        }).filter(Boolean),
+        title: weeks[i] ? t("weekPrefix") + (weeks[i] % 100) : "",
+        rows: series.map((s, k) => ({
+          color: EU_COLORS[k % EU_COLORS.length], label: euName(s.country),
+          value: s.vals[i] })),
       }),
     });
     // Legende
@@ -1056,6 +1136,7 @@
   const modalAges = document.getElementById("modalAges");
   const modalLegend = document.getElementById("modalLegend");
   let currentKey = null, currentAge = "00+";
+  let lastFocus = null;
 
   function openModal(key, age) {
     currentKey = key; currentAge = age || "00+";
@@ -1064,6 +1145,7 @@
     modalAges.replaceChildren();
     cfg.ages.forEach((a) => {
       const b = document.createElement("button");
+      b.type = "button";
       b.textContent = a === "00+" ? t("modal.ageAll") : a;
       b.dataset.age = a;
       if (a === currentAge) b.classList.add("active");
@@ -1075,8 +1157,13 @@
       modalAges.appendChild(b);
     });
     drawModal();
+    const wasHidden = modal.hidden;
     modal.hidden = false;
     document.body.style.overflow = "hidden";
+    if (wasHidden) {
+      lastFocus = document.activeElement;
+      document.getElementById("modalClose").focus();
+    }
   }
 
   function drawModal() {
@@ -1107,6 +1194,8 @@
   function closeModal() {
     modal.hidden = true;
     document.body.style.overflow = "";
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+    lastFocus = null;
   }
 
   /* ---------- Sprache umschalten ---------- */

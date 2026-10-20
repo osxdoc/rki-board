@@ -7,6 +7,11 @@ on:
     - cron: "0 8 * * 5"
   workflow_dispatch:
 
+# Nicht zwei Läufe gleichzeitig pushen lassen
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
 permissions:
   contents: write
 

@@ -90,6 +90,7 @@ body{
 .card h2{margin:0;font-size:26px;color:var(--ink)}
 
 .chart-wrap{cursor:pointer;border-radius:8px;position:relative}
+.chart-card .chart-wrap,.chip-row{position:relative}
 .chart-wrap:focus-visible{outline:3px solid var(--blue)}
 .chart svg{display:block;width:100%;height:auto}
 .chart-xlabels{

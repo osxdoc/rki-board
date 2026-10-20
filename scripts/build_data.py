@@ -10,8 +10,7 @@ Quellen (GitHub, Robert Koch-Institut, werden wöchentlich aktualisiert):
 Europa-Teil (ECDC ERVISS, GitHub EU-ECDC/Respiratory_viruses_weekly_data):
   - ILIARIRates.csv                     (ILI-/ARI-Konsultationsraten je Land)
   - SARIRates.csv                       (SARI-Raten je Land)
-  - SARITestsDetectionsPositivity.csv   (Tests/Positivität je Land & Erreger)
-  - nonSentinelSeverity.csv             (Hosp./ICU/Todesfälle je Land & Erreger)
+   - SARITestsDetectionsPositivity.csv   (Tests/Positivität je Land & Erreger)
   → data/europe_data.json + assets/europe_data.js (window.EUROPE_DATA)
 
 Lokal testen ohne Netz:  python3 scripts/build_data.py --dir data
@@ -35,12 +34,8 @@ ECDC_SOURCES = {
     "ILIARIRates": ECDC_BASE + "ILIARIRates.csv",
     "SARIRates": ECDC_BASE + "SARIRates.csv",
     "SARITestsDetectionsPositivity": ECDC_BASE + "SARITestsDetectionsPositivity.csv",
-    "nonSentinelSeverity": ECDC_BASE + "nonSentinelSeverity.csv",
 }
 
-# Erreger, die aus den ECDC-Detaildateien übernommen werden
-ECDC_PATHOGENS = {"Influenza", "RSV", "SARS-CoV-2"}
-ECDC_SEV_INDICATORS = {"hospitaladmissions", "ICUadmissions", "deaths"}
 ECDC_POS_TYPES = {"Influenza", "Influenza A", "Influenza B", "RSV", "SARS-CoV-2"}
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -172,7 +167,7 @@ def ecdc_finish(store):
 
 
 def build_europe(local_dir=None):
-    eu = {"sari": {}, "ili": {}, "ari": {}, "pos": {}, "sev": {}, "latest": None}
+    eu = {"sari": {}, "ili": {}, "ari": {}, "pos": {}, "latest": None}
     latest_pool = []
 
     def fnum(s):
@@ -213,31 +208,10 @@ def build_europe(local_dir=None):
         ecdc_add(eu["pos"], r["countryname"], r["pathogentype"],
                  season_of(r["yearweek"]), week_of(r["yearweek"]), v)
 
-    # --- Schwereverläufe: Hosp./ICU/Todesfälle je Erreger (Anzahl) ---
-    for r in csv_rows(fetch_csv("nonSentinelSeverity", local_dir)):
-        if r["indicator"] not in ECDC_SEV_INDICATORS:
-            continue
-        if r["pathogen"] not in ECDC_PATHOGENS:
-            continue
-        if r["age"] == "unk":
-            continue
-        v = fnum(r["value"])
-        if v is None:
-            continue
-        store = eu["sev"].setdefault(r["countryname"], {}) \
-                        .setdefault(r["pathogen"], {}) \
-                        .setdefault(r["indicator"], {})
-        leaf = store.setdefault(r["age"], {}).setdefault(
-            season_of(r["yearweek"]), {})
-        leaf[week_of(r["yearweek"])] = v
-
     eu["sari"] = ecdc_finish(eu["sari"])
     eu["ili"] = ecdc_finish(eu["ili"])
     eu["ari"] = ecdc_finish(eu["ari"])
     eu["pos"] = ecdc_finish(eu["pos"])
-    eu["sev"] = {c: {p: {i: ecdc_finish({"_": a})["_"] for i, a in inds.items()}
-                     for p, inds in paths.items()}
-                 for c, paths in eu["sev"].items()}
 
     eu["latest"] = max(latest_pool, key=as_tuple)
     return eu
@@ -281,8 +255,7 @@ def main():
           "| SARI-Länder:", len(europe["sari"]),
           "| ILI-Länder:", len(europe["ili"]),
           "| ARI-Länder:", len(europe["ari"]),
-          "| Positivitäts-Länder:", len(europe["pos"]),
-          "| Schweregrad-Länder:", len(europe["sev"]))
+          "| Positivitäts-Länder:", len(europe["pos"]))
     print("geschrieben:", json_path, "und", js_path)
     print("geschrieben:", eu_json_path, "und", eu_js_path)
 
