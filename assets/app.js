@@ -3,6 +3,23 @@
 (function () {
   "use strict";
   const D = window.DASH_DATA;
+  // Datenstand als ISO-Datum (Veraltet-Warnung); ältere Daten-Dateien nutzen generated_at
+  const RAW_STAMP = (D && D.meta && D.meta.updated_iso) || (D && D.generated_at) || "";
+  const LATEST_ISO = RAW_STAMP ? String(RAW_STAMP).replace(" ", "T") : "";
+  const BUILD_INFO = (D && D.meta && D.meta.build_iso) || "";
+
+  if (!D || !D.grippe || !D.sari) {
+    // Robustheit: ohne Daten keine leere Seite, sondern ein Hinweis
+    document.querySelectorAll("main.column").forEach((m) => {
+      const p = document.createElement("p");
+      p.className = "nodata";
+      p.textContent = "Die Daten (assets/data.js) konnten nicht geladen werden – " +
+        "bitte die Seite neu laden. / The data file (assets/data.js) could not be " +
+        "loaded – please reload the page.";
+      m.replaceChildren(p);
+    });
+    return;
+  }
 
   /* ---------- I18N-Wörterbuch ---------- */
   const I18N = {
@@ -10,13 +27,13 @@
       htmlLang: "de",
       locale: "de-DE",
       "title.plain": "Atemwegserkrankungen im Überblick",
-      "title.html": "Atemwegserkrankungen im<br>Überblick",
+      "title.html": "Atemwegserkrankungen im<br> Überblick",
       "topbar.label": "Details:",
       "hero.pill": "Datenlage",
       "hero.text": "Klicken Sie auf die Grafiken für die Details:",
       "intro.html": "Die folgenden Grafiken zeigen die wöchentliche Aktivität von Atemwegserkrankungen in Deutschland – von <em>sehr niedrig</em> bis <em>sehr hoch</em>. Stand: <strong id=\"latestWeek\">–</strong>, Datenquelle: Robert Koch-Institut (RKI).",
       "chart.click": "Klicken für Details",
-      "x.left": "vor 6 Monaten",
+      "x.leftN": "vor {n} Monaten",
       "x.right": "aktuell",
       "legend.now": "(aktuell)",
       "tip.now": "Aktuell",
@@ -49,6 +66,7 @@
       "activity": "Aktivität",
       "weekPrefix": "KW ",
       "aria6m": " – Inzidenz der letzten 6 Monate",
+      "aria6mN": " – Inzidenz der letzten {n} Monate",
       "ariaSeason": " – Saisonverlauf ",
       "unit.are": "Erkrankte pro 100.000 Einwohner pro Woche",
       "unit.ili": "Fälle mit Fieber pro 100.000 Einwohner pro Woche",
@@ -56,11 +74,41 @@
       "src.grippe": "GrippeWeb – Daten des Wochenberichts (RKI)",
       "src.sari": "SARI-Hospitalisierungsinzidenz (RKI)",
       "src.ecdc": "ECDC – Respiratory viruses weekly data (ERVISS)",
+      "chart.tap": "Tippen für Details",
+      "modal.kbd": "Tipp: Diagramm fokussieren und mit ←/→ die Wochenwerte ansagen; mit ▲/▼ die Altersgruppe wechseln.",
+      "chart.unit": "pro 100.000",
+      "stale": "Achtung: Der letzte Datenstand ist {d} Tage alt. Der RKI-Wochenbericht erscheint mittwochs.",
+      "build": "Datensatz erzeugt: {ts}",
+      "jump.label": "Direkt zu den Diagrammen",
+      "jump.are": "Erkrankungen",
+      "jump.ili": "Fieberfälle",
+      "jump.sari": "Krankenhaus",
+      "jump.def": "Level erklärt",
+      "sticky.stand": "Stand",
+      "tab.de.short": "DE",
+      "tab.eu.short": "EU",
+      "eu.search.label": "Land suchen:",
+      "eu.search.ph": "Name oder Code, z. B. dä / DEU",
+      "eu.search.none": "Kein Land passt zur Suche – Auswahl oben ist weiterhin sichtbar.",
+      "lang.label": "Sprache",
+      "view.tabs": "Ansicht wählen",
+      "nav.top": "Nach oben",
+      "footer.stand": "Stand der Daten:",
+      "trend.up": "▲ steigend",
+      "trend.down": "▼ fallend",
+      "trend.flat": "→ gleich",
+      "legend.toggle": "Legende: Vorjahre ein-/ausblenden",
+      "period.label": "Zeitraum:",
+      "period.3": "3 Monate",
+      "period.6": "6 Monate",
+      "period.12": "12 Monate",
+      "ages.label": "Altersgruppe (Anzeige):",
       "tab.de": "🇩🇪 Deutschland",
+
       "tab.eu": "🇪🇺 Europa",
       "eu.hero.pill": "Europa · ECDC",
       "eu.hero.text": "Klicken Sie auf die Grafiken für die Details:",
-      "eu.title.html": "Atemwegserkrankungen<br>in Europa",
+      "eu.title.html": "Atemwegserkrankungen<br> in Europa",
       "eu.intro.html": "Die Grafiken zeigen die wöchentliche Aktivität von Atemwegserkrankungen in Europa – von <em>sehr niedrig</em> bis <em>sehr hoch</em>. Stand: <strong id=\"euLatestWeek\">–</strong>, Datenquelle: ECDC (ERVISS). Ländervergleiche sind wegen unterschiedlicher Falldefinitionen, Teststrategien und Meldequoten mit Vorsicht zu interpretieren.",
       "eu.card.bars": "Aktuelle SARI-Inzidenz nach Land",
       "eu.cap.bars": "SARI-Rate der zuletzt gemeldeten Woche pro 100.000 Einwohner. Klick auf ein Land öffnet das Detail darunter. Quelle: ECDC",
@@ -80,7 +128,7 @@
       "eu.sources.li1": "<a href=\"https://github.com/EU-ECDC/Respiratory_viruses_weekly_data\" target=\"_blank\" rel=\"noopener\">ECDC – Respiratory viruses weekly data (GitHub, EU-ECDC)</a> – Rohdaten zu ERVISS (EUPL-1.2)",
       "eu.sources.li2": "<a href=\"https://www.ecdc.europa.eu/en/publications-data/european-respiratory-virus-surveillance-summary-erviss\" target=\"_blank\" rel=\"noopener\">ECDC: European Respiratory Virus Surveillance Summary (ERVISS)</a>",
       "eu.sources.li3": "<a href=\"https://erviss.org/\" target=\"_blank\" rel=\"noopener\">erviss.org – interaktives ECDC-Dashboard</a>",
-      "eu.badge": "Stand: {w} · Ø ILI {v} → {l}",
+      "eu.badge": "Stand: {w} · Ø ILI {v} ({n} Länder) → {l}",
       "eu.badgeAsof": "Stand: {w}",
       "eu.trend.ind": "Indikator:",
       "eu.trend.countries": "Länder:",
@@ -99,6 +147,10 @@
       "eu.country.eu": "Europa (Ø der Länder)",
       "eu.note": "Letzter Wert ({w}): <strong>{v} {u}</strong> → Aktivität: <strong style='color:{c}'>{l}</strong>. Quelle: <a href='{u2}' target='_blank' rel='noopener'>{s}</a>",
       "eu.nodata": "Für dieses Land liegen zu diesem Indikator keine Daten vor.",
+      "eu.bar.open": "Detail öffnen",
+      "eu.bars.stale": "✱ Meldeverzug: der zuletzt gemeldete Wert dieses Landes stammt aus einer früheren Woche.",
+      "view.de": "Deutschland-Ansicht",
+      "view.eu": "Europa-Ansicht",
       levels: ["sehr niedrig", "niedrig", "moderat", "erhöht", "hoch", "sehr hoch"],
       months: ["Okt", "Nov", "Dez", "Jan", "Feb", "Mär"],
     },
@@ -106,13 +158,13 @@
       htmlLang: "en",
       locale: "en-GB",
       "title.plain": "Respiratory diseases at a glance",
-      "title.html": "Respiratory diseases<br>at a glance",
+      "title.html": "Respiratory diseases<br> at a glance",
       "topbar.label": "Details:",
       "hero.pill": "Data overview",
       "hero.text": "Click the charts for details:",
       "intro.html": "The charts below show the weekly activity of respiratory diseases in Germany – from <em>very low</em> to <em>very high</em>. As of: <strong id=\"latestWeek\">–</strong>, data source: Robert Koch-Institut (RKI).",
       "chart.click": "Click for details",
-      "x.left": "6 months ago",
+      "x.leftN": "{n} months ago",
       "x.right": "current",
       "legend.now": "(current)",
       "tip.now": "Current",
@@ -145,6 +197,7 @@
       "activity": "Activity",
       "weekPrefix": "W ",
       "aria6m": " – incidence over the last 6 months",
+      "aria6mN": " – incidence over the last {n} months",
       "ariaSeason": " – season course ",
       "unit.are": "Cases per 100,000 population per week",
       "unit.ili": "Febrile cases per 100,000 population per week",
@@ -152,11 +205,41 @@
       "src.grippe": "GrippeWeb – weekly report data (RKI)",
       "src.sari": "SARI hospitalisation incidence (RKI)",
       "src.ecdc": "ECDC – Respiratory viruses weekly data (ERVISS)",
+      "chart.tap": "Tap for details",
+      "modal.kbd": "Tip: focus the chart and press left/right to hear weekly values; up/down switches the age group.",
+      "chart.unit": "per 100,000",
+      "stale": "Note: The latest data is {d} days old. The RKI weekly report is published on Wednesdays.",
+      "build": "Dataset generated: {ts}",
+      "jump.label": "Jump to the charts",
+      "jump.are": "Illness",
+      "jump.ili": "Fever",
+      "jump.sari": "Hospital",
+      "jump.def": "Levels",
+      "sticky.stand": "As of",
+      "tab.de.short": "DE",
+      "tab.eu.short": "EU",
+      "eu.search.label": "Find country:",
+      "eu.search.ph": "name or code, e.g. ger / DEU",
+      "eu.search.none": "No country matches the search – the selection above is still shown.",
+      "lang.label": "Language",
+      "view.tabs": "Choose view",
+      "nav.top": "Back to top",
+      "footer.stand": "Data as of:",
+      "trend.up": "▲ rising",
+      "trend.down": "▼ falling",
+      "trend.flat": "→ steady",
+      "legend.toggle": "Legend: toggle previous years",
+      "period.label": "Period:",
+      "period.3": "3 months",
+      "period.6": "6 months",
+      "period.12": "12 months",
+      "ages.label": "Age group (display):",
       "tab.de": "🇩🇪 Germany",
+
       "tab.eu": "🇪🇺 Europe",
       "eu.hero.pill": "Europe · ECDC",
       "eu.hero.text": "Click the charts for details:",
-      "eu.title.html": "Respiratory diseases<br>in Europe",
+      "eu.title.html": "Respiratory diseases<br> in Europe",
       "eu.intro.html": "The charts show the weekly activity of respiratory diseases in Europe – from <em>very low</em> to <em>very high</em>. As of: <strong id=\"euLatestWeek\">–</strong>, data source: ECDC (ERVISS). Country comparisons must be interpreted with caution due to differing case definitions, testing strategies and reporting rates.",
       "eu.card.bars": "Current SARI incidence by country",
       "eu.cap.bars": "SARI rate of the latest reported week per 100,000 population. Click a country to open its detail below. Source: ECDC",
@@ -176,7 +259,7 @@
       "eu.sources.li1": "<a href=\"https://github.com/EU-ECDC/Respiratory_viruses_weekly_data\" target=\"_blank\" rel=\"noopener\">ECDC – Respiratory viruses weekly data (GitHub, EU-ECDC)</a> – ERVISS raw data (EUPL-1.2)",
       "eu.sources.li2": "<a href=\"https://www.ecdc.europa.eu/en/publications-data/european-respiratory-virus-surveillance-summary-erviss\" target=\"_blank\" rel=\"noopener\">ECDC: European Respiratory Virus Surveillance Summary (ERVISS)</a>",
       "eu.sources.li3": "<a href=\"https://erviss.org/\" target=\"_blank\" rel=\"noopener\">erviss.org – interactive ECDC dashboard</a>",
-      "eu.badge": "As of: {w} · Ø ILI {v} → {l}",
+      "eu.badge": "As of: {w} · Ø ILI {v} ({n} countries) → {l}",
       "eu.badgeAsof": "As of {w}",
       "eu.trend.ind": "Indicator:",
       "eu.trend.countries": "Countries:",
@@ -195,6 +278,10 @@
       "eu.country.eu": "Europe (average of countries)",
       "eu.note": "Latest value ({w}): <strong>{v} {u}</strong> → Activity: <strong style='color:{c}'>{l}</strong>. Source: <a href='{u2}' target='_blank' rel='noopener'>{s}</a>",
       "eu.nodata": "No data available for this country and indicator.",
+      "eu.bar.open": "open detail",
+      "eu.bars.stale": "✱ Reporting lag: the latest value for this country is from an earlier week.",
+      "view.de": "Germany view",
+      "view.eu": "Europe view",
       levels: ["very low", "low", "moderate", "elevated", "high", "very high"],
       months: ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar"],
     },
@@ -214,6 +301,10 @@
 
   /* ---------- Konstanten ---------- */
   const LEVEL_COLORS = ["#00a651", "#a6c80a", "#ea8338", "#e8541e", "#d1231b", "#8e0e0e"];
+  // Dieselben Level als Textfarbe auf Weiß (Kontrast >= 4.5:1) für Annotationen,
+  // Notes und Level-Text; LEVEL_COLORS bleiben die Flächenfarben der Diagramme
+  const LEVEL_INK = ["#087a3d", "#5d7800", "#a35614", "#c2410c", "#c11a13", "#8e0e0e"];
+
 
   // Schwellenwerte (Inzidenz pro 100.000 EW / Woche) – kalibriert auf die
   // Aktivitätseinstufung des abgebildeten RKI-Dashboards.
@@ -237,8 +328,9 @@
 
   function levelOf(key, v) {
     const th = THRESHOLDS[key];
-    for (let i = 0; i < th.length; i++) if (v < th[i]) return { label: t("levels")[i], color: LEVEL_COLORS[i] };
-    return { label: t("levels")[5], color: LEVEL_COLORS[5] };
+    for (let i = 0; i < th.length; i++)
+      if (v < th[i]) return { label: t("levels")[i], color: LEVEL_COLORS[i], ink: LEVEL_INK[i], i: i };
+    return { label: t("levels")[5], color: LEVEL_COLORS[5], ink: LEVEL_INK[5], i: 5 };
   }
 
   // Saison-Wochen: KW 40..53, dann KW 1..39 (Saisonübergang)
@@ -260,10 +352,12 @@
 
   // Vergleichslinien der Vorjahre: dunkler = neuer; Strichart zusätzlich (Barrierefreiheit)
   const PREV_STYLE = [
-    { stroke: "#98a0a8", dash: "none" },
-    { stroke: "#b9bfc6", dash: "5 4" },
-    { stroke: "#d5d9dd", dash: "2 4" },
+    { stroke: "#7d858d", dash: "none" },
+    { stroke: "#a2a9b0", dash: "5 4" },
+    { stroke: "#c3c8cd", dash: "2 4" },
   ];
+  // "Aktuell"-Linie: Kontrast auf Weiß >= 3:1 (auch für Screenreader/Deuteranopie)
+  const CUR_LINE = "#1a8fc4";
 
   // Chronologische Punkteliste über alle Saisons: [{season, week, value}]
   function chrono(bySeason) {
@@ -276,10 +370,12 @@
   }
 
   /* ---------- 6-Monats-Diagramm (wie im Foto) ---------- */
-  function sixMonthSeries(bySeason) {
+  function sixMonthSeries(bySeason, win) {
     const all = chrono(bySeason);
     const i = all.length - 1;
-    const cur = all.slice(Math.max(0, i - 25), i + 1);
+    const w = win || 26;
+    const cur = all.slice(Math.max(0, i - w + 1), i + 1);
+
     // Vorjahresfenster über dieselben Kalenderwochen (nicht Index −52):
     // Saisons mit 53 Wochen (z. B. 2015/16, 2020/21) würden die
     // Vergleichslinien sonst um eine Woche verschieben.
@@ -309,6 +405,55 @@
     return m * p;
   }
 
+  /* ---------- Responsive Maße ----------
+     Die Diagramme werden in echter Containerbreite gezeichnet (viewBox = Pixelmaß),
+     damit Achsen- und Beschriftungstexte immer in CSS-Pixeln bleiben und auf dem
+     Handy nicht auf 3–4 px schrumpfen. */
+  function chartW(el, minW) {
+    const w = el && el.clientWidth ? el.clientWidth : 0;
+    return Math.max(minW || 300, Math.round(w || 1000));
+  }
+  const narrow = (W) => W < 520;
+  function axisFmt(v, narrowW) {
+    if (narrowW && Math.abs(v) >= 1000) return fmt.format(Math.round(v / 100) / 10) + "k";
+    return fmt.format(Math.round(v));
+  }
+  // Helle oder dunkle Schrift auf einer Level-Farbe (Badge/Chip), bester Kontrast
+  function bestTextOn(bg) {
+    const lum = (h) => {
+      const f = (i) => {
+        const v = parseInt(h.slice(i, i + 2), 16) / 255;
+        return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      };
+      return 0.2126 * f(1) + 0.7152 * f(3) + 0.0722 * f(5);
+    };
+    const ratio = (fg) => {
+      const a = lum(fg), b = lum(bg);
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    };
+    return ratio("#ffffff") >= ratio("#12212e") ? "#ffffff" : "#12212e";
+  }
+  // SVG mit viewBox == Pixelmaß: Skala 1:1, Schriftgrößen sind CSS-Pixel
+  function svgBox(W, H, attrs) {
+    const a = { viewBox: `0 0 ${W} ${H}`, width: W, height: H };
+    for (const k in attrs) a[k] = attrs[k];
+    return svgEl("svg", a);
+  }
+  // Neu zeichnen, wenn sich die Containerbreite ändert (nur dann)
+  function onResize(el, fn) {
+    if (!el) return;
+    let last = el.clientWidth, tm = null;
+    const fire = () => {
+      const w = el.clientWidth;
+      if (w === last || w === 0) return;
+      last = w;
+      clearTimeout(tm);
+      tm = setTimeout(fn, 120);
+    };
+    if (window.ResizeObserver) new ResizeObserver(fire).observe(el);
+    else window.addEventListener("resize", fire);
+  }
+
   function svgEl(name, attrs, text) {
     const el = document.createElementNS("http://www.w3.org/2000/svg", name);
     for (const k in attrs) el.setAttribute(k, attrs[k]);
@@ -327,7 +472,9 @@
     return d.trim();
   }
 
-  /* ---------- Mouseover: Hilfslinie + Tooltip mit exakten Werten ---------- */
+  /* ---------- Tooltip: Maus, Touch und Tastatur (Pfeiltasten) ---------- */
+  const liveRegion = document.getElementById("chartLive");
+
   function attachHover(svg, wrap, cfg) {
     const g = svgEl("g", { visibility: "hidden", "pointer-events": "none" });
     const guide = svgEl("line", { y1: cfg.mT, y2: cfg.H - cfg.mB,
@@ -338,8 +485,15 @@
     tip.className = "chart-tip";
     tip.hidden = true;
     wrap.appendChild(tip);
+    let idx = -1;
+
+    function fmtDelta(d) {
+      const sign = d > 0 ? "+" : d < 0 ? "−" : "";
+      return sign + fmt.format(Math.round(Math.abs(d) * 10) / 10);
+    }
 
     function show(i, clientY) {
+      idx = i;
       const data = cfg.rows(i);
       guide.setAttribute("x1", cfg.x(i));
       guide.setAttribute("x2", cfg.x(i));
@@ -353,6 +507,7 @@
       title.className = "tip-title";
       title.textContent = data.title;
       tip.appendChild(title);
+      const spoken = [data.title];
       data.rows.forEach((r) => {
         const row = document.createElement("div");
         row.className = "tip-row" + (r.bold ? " tip-bold" : "");
@@ -360,16 +515,24 @@
         sw.className = "tip-sw";
         sw.style.background = r.color;
         row.appendChild(sw);
-        row.appendChild(document.createTextNode(r.label + "  " + (r.value == null ? "–" : fmt.format(r.value))));
+        const val = r.value == null ? "–" : fmt.format(r.value);
+        row.appendChild(document.createTextNode(
+          r.label + "  " + val + (r.delta != null ? "  Δ " + fmtDelta(r.delta) : "")));
         tip.appendChild(row);
+        spoken.push(r.label + " " + val);
       });
       tip.hidden = false;
       const r = svg.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
       const px = r.left - wr.left + (cfg.x(i) / cfg.W) * r.width;
-      const py = Math.min(Math.max(clientY - wr.top, 40), wr.height - 10);
+      const first = data.rows.filter((q) => q.value != null)[0];
+      const anchor = clientY == null
+        ? r.top - wr.top + cfg.y(first ? first.value : 0)
+        : clientY;
+      const py = Math.min(Math.max(anchor - wr.top, 40), wr.height - 10);
       tip.style.left = px + "px";
       tip.style.top = py + "px";
       tip.classList.toggle("tip-flip", px > r.width * 0.55);
+      if (liveRegion) liveRegion.textContent = spoken.join(", ");
     }
     function hide() {
       g.setAttribute("visibility", "hidden");
@@ -379,14 +542,32 @@
       const r = svg.getBoundingClientRect();
       const sx = (e.clientX - r.left) * (cfg.W / r.width);
       if (sx < cfg.mL - 6 || sx > cfg.W - cfg.mR + 6) { hide(); return; }
-      const i = Math.max(0, Math.min(cfg.n - 1,
-        Math.round(((sx - cfg.mL) / (cfg.W - cfg.mL - cfg.mR)) * (cfg.n - 1))));
-      show(i, e.clientY);
+      show(Math.max(0, Math.min(cfg.n - 1,
+        Math.round(((sx - cfg.mL) / (cfg.W - cfg.mL - cfg.mR)) * (cfg.n - 1)))), e.clientY);
     });
     svg.addEventListener("pointerleave", hide);
+    /* Tastatur: Diagramm mit Tab fokussieren, Wochen mit ←/→ (Home/End) ansagen */
+    if (wrap.getAttribute("tabindex") == null) wrap.setAttribute("tabindex", "0");
+    if (!wrap.getAttribute("aria-describedby") && liveRegion)
+      wrap.setAttribute("aria-describedby", liveRegion.id);
+    wrap.addEventListener("focus", () => { show(cfg.n - 1, null); });
+    wrap.addEventListener("blur", () => { idx = -1; hide(); });
+    wrap.addEventListener("keydown", (e) => {
+      let i = idx < 0 ? cfg.n - 1 : idx;
+      if (e.key === "ArrowLeft") i -= 1;
+      else if (e.key === "ArrowRight") i += 1;
+      else if (e.key === "Home") i = 0;
+      else if (e.key === "End") i = cfg.n - 1;
+      else if (e.key === "Escape") { idx = -1; hide(); return; }
+      else return;
+      e.preventDefault();
+      show(Math.max(0, Math.min(cfg.n - 1, i)), null);
+    });
   }
 
-  // Legende unter dem 6-Monats-Diagramm: welche Linie gehört zu welcher Saison
+  // Legende: Vorjahres-Linien per Klick/Tastatur ein- und ausblenden
+  const legendOn = { are: [true, true, true], ili: [true, true, true], sari: [true, true, true] };
+
   function swatch(stroke, dash) {
     const s = svgEl("svg", { viewBox: "0 0 26 8", width: "26", height: "8", "aria-hidden": "true" });
     const attrs = { x1: 0, y1: 4, x2: 26, y2: 4, stroke, "stroke-width": 2.6 };
@@ -398,45 +579,135 @@
     const box = document.getElementById("legend-" + key);
     if (!box) return;
     box.replaceChildren();
-    const mk = (stroke, dash, label, cls) => {
-      const sp = document.createElement("span");
-      sp.className = "lg-item " + cls;
+    const mk = (stroke, dash, label, cls, on, k) => {
+      const sp = document.createElement("button");
+      sp.type = "button";
+      sp.className = "lg-item " + cls + (on ? "" : " lg-off");
+      sp.setAttribute("aria-pressed", String(!!on));
       sp.appendChild(swatch(stroke, dash));
       sp.appendChild(document.createTextNode(" " + label));
+      if (k == null) sp.setAttribute("aria-disabled", "true");
+      else sp.addEventListener("click", () => {
+        legendOn[key][k] = !legendOn[key][k];
+        renderSixMonthChart(document.getElementById("chart-" + key), key);
+      });
       box.appendChild(sp);
     };
-    mk("#69bee0", "none", cur[cur.length - 1].season + " " + t("legend.now"), "lg-now");
+    mk(CUR_LINE, "none", cur[cur.length - 1].season + " " + t("legend.now"), "lg-now", true, null);
     prev.forEach((pr, k) => {
       const st = PREV_STYLE[Math.min(k, PREV_STYLE.length - 1)];
-      mk(st.stroke, st.dash, pr.label, "lg-prev");
+      mk(st.stroke, st.dash, pr.label, "lg-prev", legendOn[key][k] !== false, k);
+    });
+    const hint = document.createElement("span");
+    hint.className = "lg-hint";
+    hint.textContent = t("legend.toggle");
+    box.appendChild(hint);
+  }
+
+  // Screenreader-Info fuer Steuer-Elemente (Zeitraum, Altersgruppe)
+  function announce(text) {
+    const live = document.getElementById("chartLive");
+    if (!live) return;
+    live.textContent = "";
+    window.setTimeout(() => { live.textContent = text; }, 40);
+  }
+
+  // Zeitraum-Umschalter je DE-Karte (3 / 6 / 12 Monate)
+  const PERIODS = [{ n: 13, m: 3, key: "period.3" }, { n: 26, m: 6, key: "period.6" },
+                   { n: 52, m: 12, key: "period.12" }];
+  function monthsOf(weeks) {
+    const p = PERIODS.filter((q) => q.n === weeks)[0];
+    return p ? p.m : 6;
+  }
+  function renderPeriodChips(key) {
+    const box = document.getElementById("period-" + key);
+    if (!box) return;
+    box.replaceChildren();
+    const lbl = document.createElement("span");
+    lbl.className = "chip-group-label";
+    lbl.textContent = t("period.label");
+    box.appendChild(lbl);
+    const sel = dePeriod[key] || 26;
+    PERIODS.forEach((p) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip" + (sel === p.n ? " active" : "");
+      b.setAttribute("aria-pressed", String(sel === p.n));
+      b.textContent = t(p.key);
+      b.addEventListener("click", () => {
+        dePeriod[key] = p.n;
+        renderSixMonthChart(document.getElementById("chart-" + key), key);
+        announce(t("card." + key) + ": " + t(p.key));
+      });
+      box.appendChild(b);
+    });
+  }
+
+  // Altersgruppen-Chips je DE-Karte (Anzeige; Kennzahlen bleiben 00+)
+  function renderAgeChips(key) {
+    const box = document.getElementById("ages-" + key);
+    if (!box) return;
+    box.replaceChildren();
+    const lbl = document.createElement("span");
+    lbl.className = "chip-group-label";
+    lbl.textContent = t("ages.label");
+    box.appendChild(lbl);
+    CHARTS[key].ages.forEach((a) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip" + (deAge[key] === a ? " active" : "");
+      b.setAttribute("aria-pressed", String(deAge[key] === a));
+      b.textContent = a === "00+" ? t("modal.ageAll") + " (00+)" : a;
+      b.addEventListener("click", () => {
+        deAge[key] = a;
+        renderSixMonthChart(document.getElementById("chart-" + key), key);
+        announce(t("card." + key) + " · " + t("ages.label") + " " + (a === "00+" ? t("modal.ageAll") : a));
+      });
+      box.appendChild(b);
     });
   }
 
   // Achsen-Beschriftung: Wochennummern an den Rändern + aktuell
-  function renderSixMonthChart(container, key) {
+  function renderSixMonthChart(container, key, age, weeks) {
     const cfg = CHARTS[key];
-    const { cur, prev, latest } = sixMonthSeries(cfg.get("00+"));
-    const W = 1000, H = 320, mL = 64, mR = 16, mT = 18, mB = 30;
+    const a = age || deAge[key] || "00+";
+    const win = weeks || dePeriod[key] || 26;
+    const { cur, prev, latest } = sixMonthSeries(cfg.get(a), win);
+    const W = chartW(container, 300), narrowW = narrow(W);
+    const H = narrowW ? 250 : 320, mL = narrowW ? 44 : 64, mR = 12, mT = 18, mB = 30;
     const n = cur.length;
+    const shownPrev = prev.filter((pr, k) => legendOn[key][k] !== false);
     const allVals = cur.map((p) => p.value)
-      .concat(prev.flatMap((pr) => pr.pts)).filter((v) => v != null);
+      .concat(shownPrev.flatMap((pr) => pr.pts)).filter((v) => v != null);
     const yMax = niceMax(Math.max.apply(null, allVals.concat([1])) * 1.08);
     const x = (i) => mL + (i / (n - 1)) * (W - mL - mR);
     const y = (v) => H - mB - (v / yMax) * (H - mT - mB);
 
-    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
-      "aria-label": t("card." + key) + t("aria6m") });
+    const months = monthsOf(win);
+    const svg = svgBox(W, H, { role: "img",
+      "aria-label": t("card." + key) + fill(t("aria6mN"), { n: months }) });
+
+    // Level-Bänder: Schwellenbereiche als dezente Streifen im Hintergrund
+    const bands = THRESHOLDS[key];
+    for (let b = 0; b < bands.length; b++) {
+      const lo = b === 0 ? 0 : bands[b - 1];
+      if (lo >= yMax) break;
+      const hi = Math.min(bands[b], yMax);
+      svg.appendChild(svgEl("rect", { x: mL, y: y(hi), width: W - mL - mR,
+        height: Math.max(0, y(lo) - y(hi)), fill: LEVEL_COLORS[b], "fill-opacity": 0.09 }));
+    }
 
     // Horizontales Gitter
     for (let k = 0; k <= 4; k++) {
       const v = (yMax / 4) * k, yy = y(v);
       svg.appendChild(svgEl("line", { x1: mL, y1: yy, x2: W - mR, y2: yy,
         stroke: k === 0 ? "#9aa1a8" : "#e4e7ea", "stroke-width": k === 0 ? 1.4 : 1 }));
-      svg.appendChild(svgEl("text", { x: mL - 8, y: yy + 4, "text-anchor": "end",
-        "font-size": 12, fill: "#6a737c" }, fmt.format(Math.round(v))));
+      svg.appendChild(svgEl("text", { x: mL - 7, y: yy + 4, "text-anchor": "end",
+        "font-size": narrowW ? 11 : 12, fill: "#6a737c" }, axisFmt(v, narrowW)));
     }
-    // Zeitleiste: vertikale Gitterlinien + KW-Beschriftung (alle 4 Wochen)
-    for (let i = n - 1; i >= 0; i -= 4) {
+    // Zeitleiste: vertikale Gitterlinien + KW-Beschriftung (Dichte je nach Breite)
+    const wkStep = W < 430 ? 8 : narrowW ? 6 : 4;
+    for (let i = n - 1; i >= 0; i -= wkStep) {
       const xx = x(i);
       svg.appendChild(svgEl("line", { x1: xx, y1: mT, x2: xx, y2: H - mB,
         stroke: "#dfe3e7", "stroke-width": 1 }));
@@ -446,7 +717,8 @@
     }
 
     // Vorjahre (grau abgestuft, gleiche Kalenderwochen, Lücken = keine Meldung)
-    prev.forEach((pr, k) => {
+    shownPrev.forEach((pr) => {
+      const k = prev.indexOf(pr);
       const st = PREV_STYLE[Math.min(k, PREV_STYLE.length - 1)];
       const pts = pr.pts.map((v, i) => ({ i, value: v }));
       const path = svgEl("path", { d: pathFrom(pts, x, y), fill: "none",
@@ -458,33 +730,42 @@
     // Aktuell (blau)
     const curIdx = cur.map((p, i) => Object.assign({ i }, p));
     svg.appendChild(svgEl("path", { d: pathFrom(curIdx, x, y), fill: "none",
-      stroke: "#69bee0", "stroke-width": 3.2, "stroke-linejoin": "round" }));
+      stroke: CUR_LINE, "stroke-width": 3.2, "stroke-linejoin": "round" }));
 
     // Letzter Punkt + Annotation (innen, Ecke gegenüber dem Linienende)
     const last = curIdx[curIdx.length - 1];
     const lvl = levelOf(key, latest.value);
     svg.appendChild(svgEl("circle", { cx: x(last.i), cy: y(latest.value), r: 5,
-      fill: "#69bee0", stroke: "#fff", "stroke-width": 1.6 }));
+      fill: CUR_LINE, stroke: "#fff", "stroke-width": 1.6 }));
     const top = y(latest.value) > mT + 48; // Linie endet tief -> Text nach oben
-    const y1 = top ? mT + 16 : H - mB - 30;
+    const fs = narrowW ? 13 : 15, dy = narrowW ? 17 : 20;
+    const y1 = top ? mT + 16 : H - mB - (fs + dy);
+    // Annotation in abgedunkelter Level-Farbe (Kontrast auf Weiß >= 4.5:1)
     svg.appendChild(svgEl("text", { x: W - mR - 4, y: y1, "text-anchor": "end",
-      "font-size": 15, "font-weight": 700, fill: lvl.color }, t("activity") + ":"));
-    svg.appendChild(svgEl("text", { x: W - mR - 4, y: y1 + 20, "text-anchor": "end",
-      "font-size": 15, "font-weight": 700, fill: lvl.color }, lvl.label));
+      "font-size": fs, "font-weight": 700, fill: lvl.ink }, t("activity") + ":"));
+    svg.appendChild(svgEl("text", { x: W - mR - 4, y: y1 + dy, "text-anchor": "end",
+      "font-size": fs, "font-weight": 700, fill: lvl.ink }, lvl.label));
 
     container.replaceChildren(svg);
+    // Zeitleisten-Beschriftung links an den gewaehlten Zeitraum anpassen
+    const xhost = container.parentNode;
+    const xleft = xhost ? xhost.querySelector(".chart-xlabels .x-left") : null;
+    if (xleft) xleft.textContent = fill(t("x.leftN"), { n: months });
     attachHover(svg, container, {
       W, H, mL, mR, mT, mB, n, x, y,
       rows: (i) => ({
         title: t("weekPrefix") + cur[i].week,
-        rows: [{ color: "#69bee0", label: t("tip.now"), value: cur[i].value, bold: true }]
-          .concat(prev.map((pr, k) => ({
-            color: PREV_STYLE[Math.min(k, PREV_STYLE.length - 1)].stroke,
+        rows: [{ color: CUR_LINE, label: t("tip.now"), value: cur[i].value, bold: true,
+                 delta: i > 0 ? cur[i].value - cur[i - 1].value : null }]
+          .concat(shownPrev.map((pr, k) => ({
+            color: PREV_STYLE[Math.min(prev.indexOf(pr), PREV_STYLE.length - 1)].stroke,
             label: pr.label, value: pr.pts[i] }))),
       }),
     });
 
     renderSixMonthLegend(key, cur, prev);
+    renderPeriodChips(key);
+    renderAgeChips(key);
     return { latest, lvl };
   }
 
@@ -493,43 +774,49 @@
     const seasons = Object.keys(bySeason).sort((a, b) => seasonKey(a) - seasonKey(b));
     const shown = seasons.slice(-5);
 
-    const W = 1000, H = 340, mL = 64, mR = 24, mT = 18, mB = 26;
-    const slots = 52; // KW 40..39
+    const W = chartW(container, 320), narrowW = narrow(W);
+    const H = narrowW ? 250 : 340, mL = narrowW ? 44 : 64, mR = 14, mT = 18, mB = 26;
+    // 53 Slots: KW 40..53 (0..13) + KW 1..39 (14..52); Saisons ohne KW 53
+    // lassen Slot 13 einfach aus
+    const slotOf = (wk) => (wk >= 40 ? wk - 40 : 14 + wk - 1);
+    const slots = 53;
     const series = shown.map((s) => {
       const pts = seasonWeeks(bySeason[s]);
-      return { season: s, pts: pts.map((p, i) => ({ i, value: p[1], week: p[0] })) };
+      return { season: s, pts: pts.map((p) => ({ i: slotOf(p[0]), value: p[1], week: p[0] })) };
     });
     const allVals = series.flatMap((s) => s.pts.map((p) => p.value));
     const yMax = niceMax(Math.max.apply(null, allVals) * 1.08);
     const x = (i) => mL + (i / (slots - 1)) * (W - mL - mR);
     const y = (v) => H - mB - (v / yMax) * (H - mT - mB);
 
-    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": ariaLabel });
+    const svg = svgBox(W, H, { role: "img", "aria-label": ariaLabel });
     for (let k = 0; k <= 4; k++) {
       const v = (yMax / 4) * k, yy = y(v);
       svg.appendChild(svgEl("line", { x1: mL, y1: yy, x2: W - mR, y2: yy,
         stroke: k === 0 ? "#9aa1a8" : "#e4e7ea", "stroke-width": k === 0 ? 1.4 : 1 }));
-      svg.appendChild(svgEl("text", { x: mL - 8, y: yy + 4, "text-anchor": "end",
-        "font-size": 12, fill: "#6a737c" }, fmt.format(Math.round(v))));
+      svg.appendChild(svgEl("text", { x: mL - 7, y: yy + 4, "text-anchor": "end",
+        "font-size": narrowW ? 11 : 12, fill: "#6a737c" }, axisFmt(v, narrowW)));
     }
     // X-Achse: Monatsanfang auf der KW-40-bis-39-Achse
-    // Okt = KW 40 (i 0), Nov ≈ KW 44 (4), Dez ≈ KW 48 (8), Jan ≈ KW 1 (13),
+    // Okt = KW 40 (i 0), Nov ≈ KW 44 (4), Dez ≈ KW 48 (8), Jan ≈ KW 1 (14),
     // Feb ≈ KW 5 (18), Mär ≈ KW 9 (22)
-    const monthTicks = [0, 4, 8, 13, 18, 22];
+    const monthTicks = narrowW ? [0, 8, 14, 22] : [0, 4, 8, 14, 18, 22];
+    const tickIx = narrowW ? [0, 2, 3, 5] : [0, 1, 2, 3, 4, 5];
     const monthLabels = t("months");
     monthTicks.forEach((i, k) => {
       svg.appendChild(svgEl("line", { x1: x(i), y1: mT, x2: x(i), y2: H - mB,
         stroke: "#dfe3e7", "stroke-width": 1 }));
       svg.appendChild(svgEl("line", { x1: x(i), y1: H - mB, x2: x(i), y2: H - mB + 4,
         stroke: "#9aa1a8" }));
-      svg.appendChild(svgEl("text", { x: x(i), y: H - mB + 18, "text-anchor": "middle",
-        "font-size": 12, fill: "#6a737c" }, monthLabels[k]));
+      svg.appendChild(svgEl("text", { x: x(i), y: H - mB + (narrowW ? 16 : 18),
+        "text-anchor": "middle",
+        "font-size": narrowW ? 11 : 12, fill: "#6a737c" }, monthLabels[tickIx[k]]));
     });
-    const grays = ["#d3d7db", "#c2c7cc", "#b0b6bc", "#9aa1a8"];
+    const grays = ["#b9bfc6", "#98a0a8", "#7d858d", "#626b73"];
     series.forEach((s, k) => {
       const isLast = k === series.length - 1;
       const path = svgEl("path", { d: pathFrom(s.pts, x, y), fill: "none",
-        stroke: isLast ? "#69bee0" : grays[Math.min(k, grays.length - 1)],
+        stroke: isLast ? CUR_LINE : grays[Math.min(k, grays.length - 1)],
         "stroke-width": isLast ? 3.2 : 1.7, "stroke-linejoin": "round" });
       path.appendChild(svgEl("title", {}, s.season));
       svg.appendChild(path);
@@ -543,7 +830,7 @@
         return {
           title: wk ? t("weekPrefix") + wk.week : "",
           rows: series.map((s, k) => (i < s.pts.length
-            ? { color: k === series.length - 1 ? "#69bee0" : grays[Math.min(k, grays.length - 1)],
+            ? { color: k === series.length - 1 ? CUR_LINE : grays[Math.min(k, grays.length - 1)],
                 label: s.season + (k === series.length - 1 ? t("modal.current") : ""),
                 value: s.pts[i].value }
             : null)).filter(Boolean),
@@ -564,8 +851,34 @@
     document.querySelectorAll("[data-i18n-html]").forEach((el) => {
       el.innerHTML = t(el.dataset.i18nHtml);
     });
-    document.querySelectorAll(".chart-wrap[data-chart]").forEach((el) => { el.title = t("chart.click"); });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+      el.setAttribute("placeholder", t(el.dataset.i18nPlaceholder));
+    });
+    document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+      el.setAttribute("aria-label", t(el.dataset.i18nAria));
+    });
+    document.querySelectorAll(".chart-wrap[data-chart]").forEach((el) => {
+      el.title = t("chart.tap");
+      const hint = el.querySelector(".chart-cta");
+      if (hint) hint.textContent = t("chart.tap");
+    });
     document.getElementById("modalClose").setAttribute("aria-label", t("modal.close"));
+    const jump = document.getElementById("jumpLinks");
+    if (jump) jump.setAttribute("aria-label", t("jump.label"));
+    const lg = document.getElementById("langLabel");
+    if (lg) lg.setAttribute("aria-label", t("lang.label"));
+    const vt = document.getElementById("viewTabs");
+    if (vt) vt.setAttribute("aria-label", t("view.tabs"));
+    const deTab = document.getElementById("viewTabDe"), euTab = document.getElementById("viewTabEu");
+    if (deTab) deTab.setAttribute("aria-label", t("view.de"));
+    if (euTab) euTab.setAttribute("aria-label", t("view.eu"));
+    const sl = document.getElementById("stickyLang");
+    if (sl) sl.setAttribute("aria-label", t("lang.label"));
+    const sb = document.getElementById("stickyBack");
+    if (sb) sb.textContent = t("nav.top");
+    const tapHint = document.getElementById("chartTapHint");
+    if (tapHint) tapHint.textContent = t("chart.tap");
+
   }
 
   /* ---------- Initialisierung ---------- */
@@ -573,9 +886,34 @@
   function setWeeks() {
     document.getElementById("latestWeek").textContent = latest;
     document.getElementById("footerWeek").textContent = latest;
+    const lwf = document.getElementById("latestWeekFooter");
+    if (lwf) lwf.textContent = latest;
+    const sbw = document.getElementById("stickyWeek");
+    if (sbw) sbw.textContent = latest;
     const euW = document.getElementById("euLatestWeek");
     if (euW) euW.textContent = EU_LATEST;
+    checkStaleness();
   }
+
+  // Datenstand: Warnung, wenn der Wochenbericht überfällig ist
+  function checkStaleness() {
+    const box = document.getElementById("staleNote");
+    if (box) {
+      const t0 = LATEST_ISO ? Date.parse(LATEST_ISO) : NaN;
+      if (isNaN(t0)) box.hidden = true;
+      else {
+        const days = Math.floor((Date.now() - t0) / 864e5);
+        box.hidden = days <= 9;
+        if (!box.hidden) box.textContent = fill(t("stale"), { d: days });
+      }
+    }
+    const bi = document.getElementById("buildInfo");
+    if (bi && BUILD_INFO) bi.textContent = fill(t("build"), { ts: BUILD_INFO });
+  }
+
+  // DE-Ansicht: Altersgruppe (Anzeige) und Zeitraum je Karte
+  const deAge = { are: "00+", ili: "00+", sari: "00+" };
+  const dePeriod = { are: 26, ili: 26, sari: 26 };
 
   const results = {};
   function renderCharts() {
@@ -588,6 +926,19 @@
     const badge = document.getElementById("overallBadge");
     badge.textContent = t("activity") + ": " + overall.label;
     badge.style.background = overall.color;
+    badge.style.color = bestTextOn(overall.color); // helle oder dunkle Schrift je Level
+    // Kartenwert in abgedunkelter Level-Farbe + Tipp-Hinweis
+    document.querySelectorAll(".card[data-chart]").forEach((card) => {
+      const v = card.dataset.chart;
+      const valEl = card.querySelector(".value");
+      if (valEl && results[v]) {
+        valEl.textContent = (results[v].latest.value == null ? "–"
+          : fmt.format(results[v].latest.value)) + " " + t("chart.unit");
+        valEl.style.color = results[v].lvl.ink;
+      }
+      const cta = card.querySelector(".card-cta");
+      if (cta) cta.textContent = t("chart.tap");
+    });
   }
 
   /* ---------- Definitions-Tabelle ---------- */
@@ -638,7 +989,7 @@
   ];
   const EU_AGES = ["total", "0-4", "5-14", "15-64", "65+"];
   const EU_COLORS = ["#1f77b4", "#d62728", "#2ca02c", "#9467bd", "#e0701e",
-                     "#17a2b8", "#b32d75", "#6a737c"];
+                     "#147f92", "#b32d75", "#5f676f"];
 
   const EU_NAMES_DE = {
     Austria: "Österreich", Belgium: "Belgien", Bulgaria: "Bulgarien", Croatia: "Kroatien",
@@ -731,24 +1082,32 @@
   function euThKey(indKey) { return indKey.indexOf("pos") === 0 ? "pos" : indKey; }
   function euLevel(indKey, v) {
     const th = EU_THRESHOLDS[euThKey(indKey)];
-    for (let i = 0; i < th.length; i++) if (v < th[i]) return { label: t("levels")[i], color: LEVEL_COLORS[i] };
-    return { label: t("levels")[5], color: LEVEL_COLORS[5] };
+    for (let i = 0; i < th.length; i++)
+      if (v < th[i]) return { label: t("levels")[i], color: LEVEL_COLORS[i], ink: LEVEL_INK[i], i: i };
+    return { label: t("levels")[5], color: LEVEL_COLORS[5], ink: LEVEL_INK[5], i: 5 };
   }
 
-  // Ø über die Länder der letzten verfügbaren Woche (ungewichtet, Ländermittel)
+  // Ø über die Länder (ungewichtetes Ländermittel). Länder, deren letzter
+  // Wert mehr als 6 Wochen zurückliegt, bleiben aussen vor – sonst verfälschen
+  // Meldeverzüge (teils ganze Saisons alt) die europäische Einstufung.
+  const EU_RECENT = 6;
   function euCountryMean(indKey, age) {
-    const vals = [];
-    let week = null;
+    const pts = [];
     for (const c of euCountries(indKey)) {
       if (c === "EU/EEA") continue;
       const p = euLastPoint(indKey, c, age);
-      if (p) {
-        if (!week || weekOrder(p) > week.o) { week = { o: weekOrder(p), t: t("weekPrefix") + p.week + " " + p.season }; }
-        vals.push(p.value);
-      }
+      if (p) pts.push({ o: weekOrder(p), v: p.value, week: p.week, season: p.season });
     }
-    if (!vals.length) return null;
-    return { value: vals.reduce((a, b) => a + b, 0) / vals.length, week };
+    if (!pts.length) return null;
+    const best = Math.max.apply(null, pts.map((p) => p.o));
+    const use = pts.filter((p) => p.o >= best - EU_RECENT);
+    const top = pts.filter((p) => p.o === best)[0];
+    return {
+      value: use.reduce((a, p) => a + p.v, 0) / use.length,
+      n: use.length,
+      week: { o: best, t: t("weekPrefix") + top.week + " " + top.season },
+      skipped: pts.length - use.length,
+    };
   }
 
   /* ---------- Europa-Badge ---------- */
@@ -756,10 +1115,21 @@
     const badge = document.getElementById("euBadge");
     if (!badge) return;
     const mean = euCountryMean("ili", "total");
-    if (!mean) { badge.textContent = fill(t("eu.badgeAsof"), { w: EU_LATEST }); badge.style.background = "#6a737c"; return; }
+    if (!mean) { badge.textContent = fill(t("eu.badgeAsof"), { w: EU_LATEST }); badge.style.background = "#6a737c"; badge.style.color = bestTextOn("#6a737c"); return; }
     const lvl = euLevel("ili", mean.value);
-    badge.textContent = fill(t("eu.badge"), { w: EU_LATEST, v: fmt.format(mean.value), l: lvl.label });
+    badge.textContent = fill(t("eu.badge"), { w: EU_LATEST, v: fmt.format(mean.value), n: mean.n, l: lvl.label });
     badge.style.background = lvl.color;
+    badge.style.color = bestTextOn(lvl.color);
+  }
+
+  // Land aus der Balkenansicht auswählen (Klick, Tastatur, später Suchfeld)
+  function selectEuCountry(country) {
+    euDetail.country = country;
+    const sel = document.getElementById("euCountrySelect");
+    if (sel) sel.value = country;
+    renderEuDetail();
+    const card = document.getElementById("card-eu-detail");
+    if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   /* ---------- Karte 1: Aktuelle SARI-Inzidenz nach Land (Balken) ---------- */
@@ -770,51 +1140,71 @@
     for (const c of euCountries("sari")) {
       if (c === "EU/EEA") continue;
       const p = euLastPoint("sari", c, "total");
-      if (p) rows.push({ country: c, value: p.value, week: p.week });
+      if (p) rows.push({ country: c, value: p.value, week: p.week, o: weekOrder(p), season: p.season });
     }
+    const best = rows.length ? Math.max.apply(null, rows.map((r) => r.o)) : 0;
+    rows.forEach((r) => { r.stale = r.o < best - EU_RECENT; });
     rows.sort((a, b) => b.value - a.value);
+    const noteEl = document.getElementById("euBarsStale");
+    if (noteEl) {
+      noteEl.hidden = !rows.some((r) => r.stale);
+      noteEl.textContent = t("eu.bars.stale");
+    }
     if (!rows.length) { box.replaceChildren(); return; }
 
-    const W = 1000, rowH = 30, mL = 190, mR = 70, mT = 8, mB = 26;
+    const W = chartW(box, 300), narrowW = narrow(W);
+    const rowH = narrowW ? 28 : 30, mL = narrowW ? 96 : 190, mR = narrowW ? 44 : 70;
+    const mT = 8, mB = 26;
     const H = mT + rows.length * rowH + mB;
     const maxV = Math.max.apply(null, rows.map((r) => r.value));
     const xMax = niceMax(maxV * 1.05);
     const x = (v) => mL + (v / xMax) * (W - mL - mR);
+    const xTicks = narrowW ? 3 : 4;
 
-    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": t("eu.card.bars") });
+    const svg = svgBox(W, H, { role: "img", "aria-label": t("eu.card.bars") });
     // Gitter + Achse
-    for (let k = 0; k <= 4; k++) {
-      const v = (xMax / 4) * k, xx = x(v);
+    for (let k = 0; k <= xTicks; k++) {
+      const v = (xMax / xTicks) * k, xx = x(v);
       svg.appendChild(svgEl("line", { x1: xx, y1: mT, x2: xx, y2: H - mB,
         stroke: k === 0 ? "#9aa1a8" : "#e4e7ea", "stroke-width": k === 0 ? 1.4 : 1 }));
       svg.appendChild(svgEl("text", { x: xx, y: H - mB + 16, "text-anchor": "middle",
-        "font-size": 11, fill: "#6a737c" }, fmt.format(Math.round(v))));
+        "font-size": 11, fill: "#6a737c" }, axisFmt(v, narrowW)));
     }
     rows.forEach((r, i) => {
       const yy = mT + i * rowH;
       const lvl = euLevel("sari", r.value);
+      const nm = narrowW ? euName(r.country) : euFlag(r.country) + euName(r.country);
+      const cut = narrowW ? 13 : 24;
       const label = svgEl("text", { x: mL - 10, y: yy + rowH / 2 + 4, "text-anchor": "end",
-        "font-size": 13, fill: "#37474f" }, euFlag(r.country) + euName(r.country));
+        "font-size": narrowW ? 12 : 13, fill: "#37474f" },
+        nm.length > cut ? nm.slice(0, cut - 1) + "…" : nm);
+      label.appendChild(svgEl("title", {}, euName(r.country)));
       svg.appendChild(label);
       const bar = svgEl("rect", { x: mL, y: yy + 5, width: Math.max(2, x(r.value) - mL),
-        height: rowH - 10, rx: 3, fill: lvl.color });
+        height: rowH - 10, rx: 3, fill: lvl.color,
+        stroke: lvl.ink, "stroke-width": 1.4 });
       bar.appendChild(svgEl("title", {},
         euName(r.country) + ": " + fmt.format(r.value) + " · " + t("weekPrefix") + r.week));
       svg.appendChild(bar);
-      svg.appendChild(svgEl("text", { x: x(r.value) + 6, y: yy + rowH / 2 + 4,
-        "font-size": 12, fill: "#455a64" }, fmt.format(r.value)));
-      // Klick -> Detail
+      const vt = svgEl("text", { x: x(r.value) + 6, y: yy + rowH / 2 + 4,
+        "font-size": narrowW ? 11 : 12, fill: r.stale ? "#8a9199" : "#455a64" },
+        fmt.format(r.value) + (r.stale ? " ✱" : ""));
+      if (r.stale) vt.appendChild(svgEl("title", {}, t("weekPrefix") + r.week + " " + r.season));
+      svg.appendChild(vt);
+      // Klick/Tastatur -> Detail (Zeile ist als Button fokussierbar)
+      const pick = () => selectEuCountry(r.country);
       const hit = svgEl("rect", { x: 0, y: yy, width: W, height: rowH, fill: "transparent",
-        style: "cursor:pointer" });
+        style: "cursor:pointer", class: "eu-hit", role: "button", tabindex: "0",
+        "aria-label": euName(r.country) + ": " + fmt.format(r.value) + " · " +
+          t("weekPrefix") + r.week + " " + r.season + (r.stale ? " · " + t("eu.bars.stale") : "") +
+          " – " + t("eu.bar.open") });
       hit.appendChild(svgEl("title", {}, euName(r.country)));
-      hit.addEventListener("click", () => {
-        euDetail.country = r.country;
-        const sel = document.getElementById("euCountrySelect");
-        if (sel) sel.value = r.country;
-        renderEuDetail();
-        const card = document.getElementById("card-eu-detail");
-        if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
+      hit.addEventListener("click", pick);
+      hit.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") { e.preventDefault(); pick(); }
       });
+      hit.addEventListener("focus", () => bar.setAttribute("class", "eu-bar-focus"));
+      hit.addEventListener("blur", () => bar.removeAttribute("class"));
       svg.appendChild(hit);
     });
     box.replaceChildren(svg);
@@ -855,6 +1245,7 @@
       const b = document.createElement("button");
       b.type = "button";
       b.className = "chip" + (euTrend.ind === ind.key ? " active" : "");
+      b.setAttribute("aria-pressed", String(euTrend.ind === ind.key));
       b.textContent = t("eu.ind." + ind.key);
       b.addEventListener("click", () => {
         euTrend.ind = ind.key;
@@ -868,13 +1259,22 @@
     lbl2.className = "chip-group-label";
     lbl2.textContent = t("eu.trend.countries");
     cBox.appendChild(lbl2);
-    euTrendPool().forEach((c) => {
+    const visible = euTrendPool().filter(euMatches);
+    if (!visible.length) {
+      const n = document.createElement("span");
+      n.className = "chip-group-label eu-search-none";
+      n.textContent = t("eu.search.none");
+      cBox.appendChild(n);
+    }
+    visible.forEach((c) => {
       const on = euTrend.countries.indexOf(c) >= 0;
       const b = document.createElement("button");
       b.type = "button";
       b.className = "chip" + (on ? " active" : "");
+      b.setAttribute("aria-pressed", String(on));
       b.style.setProperty("--chip-color", on ? EU_COLORS[euTrend.countries.indexOf(c) % EU_COLORS.length] : "#90a4ae");
       b.textContent = euFlag(c) + euName(c);
+
       b.addEventListener("click", () => {
         const i = euTrend.countries.indexOf(c);
         if (i >= 0) { if (euTrend.countries.length > 1) euTrend.countries.splice(i, 1); }
@@ -892,9 +1292,8 @@
     const last = euLastWeekAcross(euTrend.ind);
     const weeks = last ? euCalendarWeeks(last, 26) : [];
     const n = weeks.length || 2;
-    const weekIx = {};
-    weeks.forEach((k, i) => { weekIx[k] = i; });
-    const W = 1000, H = 320, mL = 64, mR = 16, mT = 18, mB = 30;
+    const W = chartW(box, 300), narrowW = narrow(W);
+    const H = narrowW ? 250 : 320, mL = narrowW ? 44 : 64, mR = 12, mT = 18, mB = 30;
     const series = euTrend.countries.map((c) => {
       const map = {};
       chrono(euSeries(euTrend.ind, c, "total"))
@@ -906,17 +1305,16 @@
     const x = (i) => mL + (i / (n - 1)) * (W - mL - mR);
     const y = (v) => H - mB - (v / yMax) * (H - mT - mB);
 
-    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
-      "aria-label": t("eu.card.trend") + t("aria6m") });
+    const svg = svgBox(W, H, { role: "img", "aria-label": t("eu.card.trend") + t("aria6m") });
     for (let k = 0; k <= 4; k++) {
       const v = (yMax / 4) * k, yy = y(v);
       svg.appendChild(svgEl("line", { x1: mL, y1: yy, x2: W - mR, y2: yy,
         stroke: k === 0 ? "#9aa1a8" : "#e4e7ea", "stroke-width": k === 0 ? 1.4 : 1 }));
-      svg.appendChild(svgEl("text", { x: mL - 8, y: yy + 4, "text-anchor": "end",
-        "font-size": 12, fill: "#6a737c" }, fmt.format(Math.round(v))));
+      svg.appendChild(svgEl("text", { x: mL - 7, y: yy + 4, "text-anchor": "end",
+        "font-size": narrowW ? 11 : 12, fill: "#6a737c" }, axisFmt(v, narrowW)));
     }
-    // Zeitachse: Beschriftung alle 4 Wochen (KW der Kalender-Kachel)
-    for (let i = n - 1; i >= 0; i -= 4) {
+    // Zeitachse: Beschriftung alle 4 Wochen (KW der Kalender-Kachel), dünner wenn schmal
+    for (let i = n - 1; i >= 0; i -= (W < 430 ? 8 : narrowW ? 6 : 4)) {
       const xx = x(i);
       svg.appendChild(svgEl("line", { x1: xx, y1: mT, x2: xx, y2: H - mB,
         stroke: "#dfe3e7", "stroke-width": 1 }));
@@ -948,25 +1346,32 @@
           value: s.vals[i] })),
       }),
     });
-    // Legende
+    // Legende (Farbbezeichnung + Kontrast wie im deutschen Board)
     const legend = document.getElementById("legend-eu-trend");
     if (legend) {
       legend.replaceChildren();
       series.forEach((s, k) => {
+        const isLast = k === series.length - 1;
         const sp = document.createElement("span");
-        sp.className = "lg-item";
+        sp.className = "lg-item " + (isLast ? "lg-now" : "lg-prev");
         const sw = document.createElement("span");
         sw.style.cssText = "display:inline-block;width:14px;height:4px;border-radius:2px;background:" +
           EU_COLORS[k % EU_COLORS.length];
         sp.appendChild(sw);
-        sp.appendChild(document.createTextNode(" " + euName(s.country)));
+        sp.appendChild(document.createTextNode(" " + euFlag(s.country) + euName(s.country)));
         legend.appendChild(sp);
       });
     }
+
   }
 
   /* ---------- Karte 3: Land im Detail ---------- */
   const euDetail = { country: "Germany", ind: "sari", age: "total" };
+  let euSearch = "";
+  function euMatches(c) {
+    if (!euSearch) return true;
+    return (euName(c) + " " + c).toLowerCase().indexOf(euSearch) >= 0;
+  }
 
   function renderEuControls() {
     const sel = document.getElementById("euCountrySelect");
@@ -976,13 +1381,23 @@
     const pool = euCountries(euDetail.ind).filter((c) => c !== "EU/EEA");
     if (pool.indexOf(euDetail.country) < 0) euDetail.country = pool[0] || "Germany";
     sel.replaceChildren();
-    pool.forEach((c) => {
+    const shown = pool.filter(euMatches);
+    if (shown.indexOf(euDetail.country) < 0) {
+      const o = document.createElement("option");
+      o.value = euDetail.country;
+      o.textContent = euFlag(euDetail.country) + euName(euDetail.country);
+      o.selected = true;
+      sel.appendChild(o);
+    }
+    shown.forEach((c) => {
       const o = document.createElement("option");
       o.value = c;
       o.textContent = euFlag(c) + euName(c);
       if (c === euDetail.country) o.selected = true;
       sel.appendChild(o);
     });
+    sel.setAttribute("aria-label", t("eu.detail.country"));
+
     indBox.replaceChildren();
     const lbl = document.createElement("span");
     lbl.className = "chip-group-label";
@@ -1036,7 +1451,7 @@
       shown.forEach((s, k) => {
         const isLast = k === shown.length - 1;
         const sp = document.createElement("span");
-        sp.style.color = isLast ? "#2a7fb8" : "#6a737c";
+        sp.style.color = isLast ? "#2472a8" : "#5f676f";
         sp.style.fontWeight = isLast ? "700" : "400";
         sp.textContent = "▬ " + s + (isLast ? t("modal.current") : "");
         legend.appendChild(sp);
@@ -1049,7 +1464,7 @@
     if (note) {
       note.innerHTML = fill(t("eu.note"), {
         w: t("weekPrefix") + lastPt.week, v: fmt.format(lastPt.value), u: unit,
-        c: lvl.color, l: lvl.label, u2: EU_SOURCE_URL, s: t("src.ecdc"),
+        c: lvl.ink, l: lvl.label, u2: EU_SOURCE_URL, s: t("src.ecdc"),
       });
     }
   }
@@ -1107,27 +1522,72 @@
   }
 
   /* ---------- Ansicht umschalten ---------- */
-  function setView(view) {
+  function setView(view, opts) {
     const eu = view === "eu";
     document.getElementById("view-de").hidden = eu;
     document.getElementById("view-eu").hidden = !eu;
     document.getElementById("viewTabDe").classList.toggle("active", !eu);
     document.getElementById("viewTabEu").classList.toggle("active", eu);
+    document.getElementById("viewTabDe").setAttribute("aria-selected", String(!eu));
+    document.getElementById("viewTabEu").setAttribute("aria-selected", String(eu));
+    document.getElementById("viewTabDe").setAttribute("tabindex", eu ? "-1" : "0");
+    document.getElementById("viewTabEu").setAttribute("tabindex", eu ? "0" : "-1");
     try { localStorage.setItem("rkiview", view); } catch (e) { /* egal */ }
+    // Ausgeblendete Ansichten haben Breite 0: Diagramme beim Einblenden neu zeichnen
+    if (opts && opts.noRender) return;
+    if (eu) renderEurope(); else renderCharts();
   }
 
   function initEurope() {
     euTrendFix();
-    document.getElementById("euCountrySelect").addEventListener("change", (e) => {
+    const sel = document.getElementById("euCountrySelect");
+    sel.addEventListener("change", (e) => {
       euDetail.country = e.target.value;
       renderEuDetail();
+      renderEuTrendChips();
     });
-    document.getElementById("viewTabDe").addEventListener("click", () => setView("de"));
-    document.getElementById("viewTabEu").addEventListener("click", () => setView("eu"));
+    // Tastatur: ▲▼ wechseln im Landlisten-Feld (bei gefilterter Liste)
+    sel.addEventListener("keydown", (e) => {
+      const opts = Array.prototype.map.call(sel.options, (o) => o.value).filter((v) => v);
+      const i = opts.indexOf(sel.value);
+      if (i < 0) return;
+      let j = -1;
+      if (e.key === "ArrowUp") j = Math.max(0, i - 1);
+      else if (e.key === "ArrowDown") j = Math.min(opts.length - 1, i + 1);
+      else return;
+      e.preventDefault();
+      sel.value = opts[j];
+      euDetail.country = opts[j];
+      renderEuDetail();
+      renderEuTrendChips();
+    });
+    const search = document.getElementById("euSearch");
+    if (search) search.addEventListener("input", () => {
+      euSearch = search.value.trim().toLowerCase();
+      renderEurope();
+    });
+    const tabs = [[document.getElementById("viewTabDe"), "de"],
+                  [document.getElementById("viewTabEu"), "eu"]];
+    tabs.forEach((pair, i) => {
+      pair[0].addEventListener("click", () => setView(pair[1]));
+      // Tablist: Pfeiltasten schalten zwischen Deutschland / Europa
+      pair[0].addEventListener("keydown", (e) => {
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        e.preventDefault();
+        const other = tabs[i === 0 ? 1 : 0];
+        setView(other[1]);
+        other[0].focus();
+      });
+    });
     let start = "de";
     try { if (localStorage.getItem("rkiview") === "eu") start = "eu"; } catch (e) { /* egal */ }
-    setView(start);
+    if (location.hash === "#eu" || location.hash === "#europe") start = "eu";
+    setView(start, { noRender: true });
     renderEurope();
+    // Responsive: Diagramme neu zeichnen, wenn sich die Containerbreite ändert
+    onResize(document.getElementById("chart-eu-bars"), renderEuBars);
+    onResize(document.getElementById("chart-eu-trend"), renderEuTrend);
+    onResize(document.getElementById("chart-eu-detail"), renderEuDetail);
   }
 
   /* ---------- Modal ---------- */
@@ -1138,6 +1598,21 @@
   let currentKey = null, currentAge = "00+";
   let lastFocus = null;
 
+  function focusableIn(root) {
+    return Array.prototype.filter.call(
+      root.querySelectorAll('a[href], button:not([disabled]), input, select, [tabindex]:not([tabindex="-1"])'),
+      (el) => !el.hidden && el.offsetParent !== null);
+  }
+  // Fokus-Falle: Tab springt innerhalb des offenen Dialogs
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Tab" || modal.hidden) return;
+    const items = focusableIn(modal);
+    if (!items.length) return;
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+
   function openModal(key, age) {
     currentKey = key; currentAge = age || "00+";
     const cfg = CHARTS[key];
@@ -1146,12 +1621,16 @@
     cfg.ages.forEach((a) => {
       const b = document.createElement("button");
       b.type = "button";
-      b.textContent = a === "00+" ? t("modal.ageAll") : a;
+      b.textContent = a === "00+" ? t("modal.ageAll") + " (00+)" : a;
       b.dataset.age = a;
+      b.setAttribute("aria-pressed", String(a === currentAge));
       if (a === currentAge) b.classList.add("active");
       b.addEventListener("click", () => {
         currentAge = a;
-        modalAges.querySelectorAll("button").forEach((x) => x.classList.toggle("active", x.dataset.age === a));
+        modalAges.querySelectorAll("button").forEach((x) => {
+          x.classList.toggle("active", x.dataset.age === a);
+          x.setAttribute("aria-pressed", String(x.dataset.age === a));
+        });
         drawModal();
       });
       modalAges.appendChild(b);
@@ -1166,6 +1645,16 @@
     }
   }
 
+  // Altersgruppe einer DE-Karte wechseln (Pfeiltasten auf der Grafik)
+  function openAge(key, delta) {
+    const ages = CHARTS[key].ages;
+    let i = ages.indexOf(deAge[key]);
+    if (i < 0) i = 0;
+    i = Math.max(0, Math.min(ages.length - 1, i + delta));
+    deAge[key] = ages[i];
+    renderSixMonthChart(document.getElementById("chart-" + key), key);
+  }
+
   function drawModal() {
     const cfg = CHARTS[currentKey];
     const { series, shown } = renderSeasonChart(modalChart, CHARTS[currentKey].get(currentAge) || {},
@@ -1177,16 +1666,20 @@
     shown.forEach((s, k) => {
       const isLast = k === shown.length - 1;
       const sp = document.createElement("span");
-      sp.style.color = isLast ? "#2a7fb8" : "#6a737c";
+      sp.style.color = isLast ? "#2472a8" : "#5f676f";
       sp.style.fontWeight = isLast ? "700" : "400";
       sp.textContent = "▬ " + s + (isLast ? t("modal.current") : "");
       modalLegend.appendChild(sp);
     });
     const last = series[series.length - 1].pts;
     const lastPt = last[last.length - 1];
+    const prevPt = last.length > 1 ? last[last.length - 2] : null;
     const lvl = levelOf(currentKey, lastPt.value);
+    const dir = !prevPt ? ""
+      : lastPt.value > prevPt.value ? t("trend.up")
+      : lastPt.value < prevPt.value ? t("trend.down") : t("trend.flat");
     document.getElementById("modalNote").innerHTML = fill(t("modal.note"), {
-      w: latest, v: fmt.format(lastPt.value), c: lvl.color, l: lvl.label,
+      w: latest, v: fmt.format(lastPt.value), c: lvl.ink, l: lvl.label, d: dir,
       u: cfg.sourceUrl, s: t(cfg.srcKey),
     });
   }
@@ -1198,35 +1691,96 @@
     lastFocus = null;
   }
 
-  /* ---------- Sprache umschalten ---------- */
+  /* ---------- Sprache + URL-Zustand ---------- */
+  function syncUrl() {
+    if (!history.replaceState) return;
+    const eu = !document.getElementById("view-eu").hidden;
+    try {
+      history.replaceState(null, "",
+        location.pathname + location.search + "#" + (eu ? "eu" : "de") + "?lang=" + lang);
+    } catch (e) { /* file:-Schema: kein History-API */ }
+  }
+
   function setLang(l) {
     if (l !== "de" && l !== "en") return;
     lang = l;
     try { localStorage.setItem("rkilang", l); } catch (e) { /* egal */ }
     fmt = new Intl.NumberFormat(I18N[lang].locale, { maximumFractionDigits: 1 });
-    document.getElementById("langDe").classList.toggle("active", lang === "de");
-    document.getElementById("langEn").classList.toggle("active", lang === "en");
+    document.querySelectorAll("[data-lang]").forEach((b) =>
+      b.classList.toggle("active", (b.dataset.lang || "") === lang));
     applyStatic();
     renderCharts();
     buildDefinition();
     setWeeks();
     renderEurope();
+    syncStickyBar();
+    syncUrl();
     if (!modal.hidden) openModal(currentKey, currentAge);
   }
 
-  document.getElementById("langDe").addEventListener("click", () => setLang("de"));
-  document.getElementById("langEn").addEventListener("click", () => setLang("en"));
+  document.querySelectorAll("[data-lang]").forEach((b) =>
+    b.addEventListener("click", () => setLang(b.dataset.lang)));
 
   document.querySelectorAll(".chart-wrap").forEach((el) => {
     if (!el.dataset.chart) return; // Europa-Karten haben eigenes Klickverhalten
     el.addEventListener("click", () => openModal(el.dataset.chart));
     el.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openModal(el.dataset.chart); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); openAge(el.dataset.chart, 1); }
+      else if (e.key === "ArrowDown") { e.preventDefault(); openAge(el.dataset.chart, -1); }
     });
   });
   document.getElementById("modalClose").addEventListener("click", closeModal);
   modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+  /* ---------- Leiste: Badge, Stand und Tabs beim Scrollen fixieren ---------- */
+  const sticky = document.getElementById("stickyBar");
+  const stickyBadge = document.getElementById("stickyBadge");
+  const stickyWeek = document.getElementById("stickyWeek");
+  const stickyViewDe = document.getElementById("stickyViewDe");
+  const stickyViewEu = document.getElementById("stickyViewEu");
+
+  function euStickyLevel() {
+    const mean = euCountryMean("ili", "total");
+    return mean ? euLevel("ili", mean.value) : { label: "–", color: "#6a737c" };
+  }
+
+  function syncStickyBar() {
+    if (!sticky) return;
+    const eu = !document.getElementById("view-eu").hidden;
+    const lvl = eu ? euStickyLevel() : results.are.lvl;
+    stickyBadge.textContent = lvl.label;
+    stickyBadge.style.background = lvl.color;
+    stickyBadge.style.color = bestTextOn(lvl.color);
+    stickyWeek.textContent = eu ? EU_LATEST : latest;
+    stickyViewDe.classList.toggle("active", !eu);
+    stickyViewEu.classList.toggle("active", eu);
+    sticky.setAttribute("aria-hidden", "false");
+  }
+
+  function initStickyBar() {
+    if (!sticky) return;
+    stickyViewDe.addEventListener("click", () => setView("de"));
+    stickyViewEu.addEventListener("click", () => setView("eu"));
+    const sentinel = document.getElementById("sentinel");
+    if (sentinel && window.IntersectionObserver) {
+      new IntersectionObserver((es) => {
+        sticky.classList.toggle("show", !es[0].isIntersecting);
+      }).observe(sentinel);
+    }
+    const back = document.getElementById("stickyBack");
+    if (back) back.addEventListener("click", () =>
+      window.scrollTo({ top: 0, behavior: "smooth" }));
+    syncStickyBar();
+  }
+
+  // Alle DE-Diagramme neu zeichnen (Responsive, Badge-Update, Definitionsnotiz)
+  function renderAll() {
+    renderCharts();
+    buildDefinition();
+    syncStickyBar();
+  }
 
   /* ---------- Start ---------- */
   applyStatic();
@@ -1234,6 +1788,23 @@
   buildDefinition();
   setWeeks();
   initEurope();
-  document.getElementById("langDe").classList.toggle("active", lang === "de");
-  document.getElementById("langEn").classList.toggle("active", lang === "en");
+  initStickyBar();
+  Object.keys(CHARTS).forEach((k) =>
+    onResize(document.getElementById("chart-" + k), renderAll));
+  onResize(modalChart, () => { if (!modal.hidden) drawModal(); });
+  document.querySelectorAll("[data-lang]").forEach((b) =>
+    b.classList.toggle("active", (b.dataset.lang || "") === lang));
+  // Sprungmenü: sanftes Scrollen zu den Karten
+  document.querySelectorAll("#jumpLinks a").forEach((a) => {
+    a.addEventListener("click", (ev) => {
+      const id = a.getAttribute("href").slice(1);
+      const el = document.getElementById(id);
+      if (!el) return;
+      ev.preventDefault();
+      const det = el.tagName === "DETAILS" ? el : el.querySelector("details");
+      if (det) det.open = true;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
 })();
+

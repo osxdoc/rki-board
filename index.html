@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#20577f">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a7fb8'/%3E%3Cpath d='M5 17h5l3-7 5 12 3-8h6' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <title>Atemwegserkrankungen im Überblick</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/style.css?v=20261027T022010Z">
 </head>
 <body>
 
@@ -17,21 +17,51 @@
     <span class="brand-pill">RKI · ECDC</span>
     <span class="topbar-label" data-i18n="topbar.label">Details:</span>
     <span class="lang-toggle" role="group" aria-label="Sprache / Language">
-      <button type="button" class="lang-btn" id="langDe" lang="de">DE</button>
-      <button type="button" class="lang-btn" id="langEn" lang="en">EN</button>
+      <button type="button" class="lang-btn" id="langDe" lang="de" data-lang="de" aria-pressed="false">DE</button>
+      <button type="button" class="lang-btn" id="langEn" lang="en" data-lang="en" aria-pressed="false">EN</button>
     </span>
   </div>
 </header>
 
 <!-- Ansicht umschalten: Deutschland / Europa -->
-<nav class="view-tabs" role="group" aria-label="Ansicht / View">
+<nav class="view-tabs" id="viewTabs" role="tablist" aria-label="Ansicht / View">
   <div class="view-tabs-inner">
-    <button type="button" class="view-tab" id="viewTabDe" data-i18n="tab.de">🇩🇪 Deutschland</button>
-    <button type="button" class="view-tab" id="viewTabEu" data-i18n="tab.eu">🇪🇺 Europa</button>
+    <button type="button" class="view-tab" id="viewTabDe" role="tab" aria-controls="view-de" aria-selected="true" tabindex="0" data-i18n="tab.de">🇩🇪 Deutschland</button>
+    <button type="button" class="view-tab" id="viewTabEu" role="tab" aria-controls="view-eu" aria-selected="false" tabindex="-1" data-i18n="tab.eu">🇪🇺 Europa</button>
   </div>
 </nav>
 
-<main class="column" id="view-de">
+<!-- Werkzeugleiste: erscheint erst, wenn die Kopfzeile herausgelaufen ist -->
+<div class="sticky-bar" id="stickyBar" aria-hidden="true">
+  <div class="sticky-inner">
+    <span class="sticky-badge" id="stickyBadge">–</span>
+    <span class="sticky-week"><span data-i18n="sticky.stand">Stand</span> <strong id="stickyWeek">–</strong></span>
+    <span class="sticky-tabs" role="group" aria-label="Ansicht / View">
+      <button type="button" class="sticky-tab" id="stickyViewDe" data-i18n="tab.de.short"
+        data-i18n-aria="view.de">DE</button>
+      <button type="button" class="sticky-tab" id="stickyViewEu" data-i18n="tab.eu.short"
+        data-i18n-aria="view.eu">EU</button>
+    </span>
+    <span class="sticky-lang" id="stickyLang" role="group" aria-label="Sprache / Language">
+      <button type="button" class="sticky-tab" data-lang="de">DE</button>
+      <button type="button" class="sticky-tab" data-lang="en">EN</button>
+    </span>
+    <button type="button" class="sticky-back" id="stickyBack" data-i18n="nav.top">Nach oben</button>
+  </div>
+</div>
+
+<!-- Sprungmarken: sanftes Scrollen zu den Diagrammen -->
+<nav class="jump-links" id="jumpLinks" aria-label="Direkt zu den Diagrammen">
+  <a href="#card-are" data-i18n="jump.are">Erkrankungen</a>
+  <a href="#card-ili" data-i18n="jump.ili">Fieberfälle</a>
+  <a href="#card-sari" data-i18n="jump.sari">Krankenhaus</a>
+  <a href="#definition" data-i18n="jump.def">Level erklärt</a>
+</nav>
+
+<!-- Beobachter fuer das Einblenden der Werkzeugleiste -->
+<span id="sentinel" aria-hidden="true"></span>
+
+<main class="column" id="view-de" role="tabpanel" aria-labelledby="viewTabDe">
 
   <!-- Hero-Leiste -->
   <div class="hero">
@@ -40,7 +70,7 @@
   </div>
 
   <!-- Titel -->
-  <h1 class="page-title" data-i18n-html="title.html">Atemwegserkrankungen im<br>Überblick</h1>
+  <h1 class="page-title" data-i18n-html="title.html">Atemwegserkrankungen im<br> Überblick</h1>
 
   <!-- Zentrale Aktivitäts-Badge -->
   <div class="activity-badge" id="overallBadge">Aktivität: …</div>
@@ -50,54 +80,65 @@
     in Deutschland – von <em>sehr niedrig</em> bis <em>sehr hoch</em>. Stand:
     <strong id="latestWeek">–</strong>, Datenquelle: Robert Koch-Institut (RKI).
   </p>
+  <p class="notice" id="staleNote" hidden></p>
+  <p class="tap-hint" id="chartTapHint"></p>
 
   <!-- Karte 1: Erkrankungen der Atemwege -->
-  <section class="card" id="card-are">
+  <section class="card" id="card-are" data-chart="are">
     <div class="card-head">
       <span class="icon-circle" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M12 3.5v6.2m0 0c-.6-1.6-2-2.6-3.6-2.6-2 0-3.4 1.5-3.9 3.6-.4 1.9-.6 4-.6 6 0 2.2 1.3 3.8 3.2 3.8 1.6 0 2.9-1.2 3.9-2.9.7-1.2 1-2.6 1-4.1V9.7m0 0c.6-1.6 2-2.6 3.6-2.6 2 0 3.4 1.5 3.9 3.6.4 1.9.6 4 .6 6 0 2.2-1.3 3.8-3.2 3.8-1.6 0-2.9-1.2-3.9-2.9-.7-1.2-1-2.6-1-4.1v-3.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </span>
       <h2 data-i18n="card.are">Erkrankungen der Atemwege</h2>
+      <div class="card-meta"><span class="value">–</span><span class="card-cta"></span></div>
     </div>
+    <div class="chip-row" id="period-are" role="group"></div>
+    <div class="chip-row" id="ages-are" role="group"></div>
     <div class="chart-wrap" data-chart="are" role="button" tabindex="0" title="Klicken für Details">
       <div class="chart" id="chart-are"></div>
       <div class="chart-legend" id="legend-are"></div>
-      <div class="chart-xlabels"><span data-i18n="x.left">vor 6 Monaten</span><span data-i18n="x.right">aktuell</span></div>
+      <div class="chart-xlabels"><span class="x-left">vor 6 Monaten</span><span class="x-right" data-i18n="x.right">aktuell</span></div>
       <p class="chart-caption" data-i18n="cap.are">ARE-Inzidenz (GrippeWeb): Erkrankte pro 100.000 Einwohner pro Woche, alle Altersgruppen. Quelle: RKI</p>
     </div>
   </section>
 
   <!-- Karte 2: Fälle mit Fieber -->
-  <section class="card" id="card-ili">
+  <section class="card" id="card-ili" data-chart="ili">
     <div class="card-head">
       <span class="icon-circle" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 8.5v6.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.6" fill="currentColor"/></svg>
       </span>
       <h2 data-i18n="card.ili">Fälle mit Fieber</h2>
+      <div class="card-meta"><span class="value">–</span><span class="card-cta"></span></div>
     </div>
+    <div class="chip-row" id="period-ili" role="group"></div>
+    <div class="chip-row" id="ages-ili" role="group"></div>
     <div class="chart-wrap" data-chart="ili" role="button" tabindex="0" title="Klicken für Details">
       <div class="chart" id="chart-ili"></div>
       <div class="chart-legend" id="legend-ili"></div>
-      <div class="chart-xlabels"><span data-i18n="x.left">vor 6 Monaten</span><span data-i18n="x.right">aktuell</span></div>
+      <div class="chart-xlabels"><span class="x-left">vor 6 Monaten</span><span class="x-right" data-i18n="x.right">aktuell</span></div>
       <p class="chart-caption" data-i18n="cap.ili">ILI-Inzidenz (GrippeWeb): Fälle mit grippeähnlicher Symptomatik inkl. Fieber pro 100.000 Einwohner pro Woche. Quelle: RKI</p>
     </div>
   </section>
 
   <!-- Karte 3: Fälle im Krankenhaus -->
-  <section class="card" id="card-sari">
+  <section class="card" id="card-sari" data-chart="sari">
     <div class="card-head">
       <span class="icon-circle" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 15h18M6 10V7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v3M3 18v2m18-2v2M12 7.5v3m-1.5-1.5h3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </span>
       <h2 data-i18n="card.sari">Fälle im Krankenhaus</h2>
+      <div class="card-meta"><span class="value">–</span><span class="card-cta"></span></div>
     </div>
+    <div class="chip-row" id="period-sari" role="group"></div>
+    <div class="chip-row" id="ages-sari" role="group"></div>
     <div class="chart-wrap" data-chart="sari" role="button" tabindex="0" title="Klicken für Details">
       <div class="chart" id="chart-sari"></div>
       <div class="chart-legend" id="legend-sari"></div>
-      <div class="chart-xlabels"><span data-i18n="x.left">vor 6 Monaten</span><span data-i18n="x.right">aktuell</span></div>
+      <div class="chart-xlabels"><span class="x-left">vor 6 Monaten</span><span class="x-right" data-i18n="x.right">aktuell</span></div>
       <p class="chart-caption" data-i18n="cap.sari">SARI-Hospitalisierungsinzidenz: Einweisungen wegen schwerer akuter respiratorischer Infektionen pro 100.000 Einwohner pro Woche. Quelle: RKI</p>
     </div>
-    <details class="definition">
+    <details class="definition" id="definition">
       <summary data-i18n="def.summary">Wie ist sehr niedrige bis sehr hohe Aktivität definiert?</summary>
       <div class="definition-body" id="definitionBody"></div>
     </details>
@@ -160,6 +201,7 @@
     <div class="chart-wrap" id="euBarsWrap">
       <div class="chart" id="chart-eu-bars"></div>
       <p class="chart-caption" data-i18n="eu.cap.bars">SARI-Rate der zuletzt gemeldeten Woche pro 100.000 Einwohner. Klick auf ein Land öffnet das Detail darunter. Quelle: ECDC</p>
+      <p class="chart-caption eu-stale" id="euBarsStale" hidden></p>
     </div>
   </section>
 
@@ -176,10 +218,10 @@
     <div class="chart-wrap" id="euTrendWrap">
       <div class="chart" id="chart-eu-trend"></div>
       <div class="chart-legend" id="legend-eu-trend"></div>
-      <div class="chart-xlabels"><span data-i18n="x.left">vor 6 Monaten</span><span data-i18n="x.right">aktuell</span></div>
+      <div class="chart-xlabels"><span class="x-left">vor 6 Monaten</span><span class="x-right" data-i18n="x.right">aktuell</span></div>
       <p class="chart-caption" data-i18n="eu.cap.trend">Letzte 26 Wochen je Land. Quelle: ECDC</p>
     </div>
-    <details class="definition">
+    <details class="definition" id="euDefinition">
       <summary data-i18n="eu.def.summary">Wie sind die Aktivitätslevel in der Europa-Ansicht definiert?</summary>
       <div class="definition-body" id="euDefinitionBody"></div>
     </details>
@@ -196,6 +238,10 @@
     <div class="eu-controls">
       <label class="eu-select-label" for="euCountrySelect" data-i18n="eu.detail.country">Land:</label>
       <select class="eu-select" id="euCountrySelect"></select>
+      <label class="eu-search-label" for="euSearch"><span data-i18n="eu.search.label">Suchen:</span>
+        <input class="eu-search" id="euSearch" type="search" autocomplete="off"
+          data-i18n-placeholder="eu.search.ph" placeholder="z. B. dä">
+      </label>
     </div>
     <div class="chip-row chip-wrap" id="euDetailIndicators" role="group"></div>
     <div class="chip-row" id="euDetailAges" role="group"></div>
@@ -231,7 +277,11 @@
 <footer class="footer">
   <p data-i18n-html="footer.html">Daten: Robert Koch-Institut (RKI) · GrippeWeb · SARI-Sentinel · ECDC (ERVISS) · Stand: <span id="footerWeek">–</span> ·
      Diese Seite ist eine Nachbildung auf Basis der offenen RKI- und ECDC-Daten.</p>
+  <p class="footer-week"><span data-i18n="footer.stand">Stand der Daten:</span> <strong id="latestWeekFooter">–</strong></p>
+  <p class="build-info" id="buildInfo"></p>
 </footer>
+
+<p id="chartLive" class="sr-only" aria-live="polite"></p>
 
 <!-- Detail-Modal -->
 <div class="modal-backdrop" id="modal" hidden>
@@ -247,8 +297,8 @@
   </div>
 </div>
 
-<script src="assets/data.js"></script>
-<script src="assets/europe_data.js"></script>
-<script src="assets/app.js"></script>
+<script src="assets/data.js?v=20261027T022010Z"></script>
+<script src="assets/europe_data.js?v=20261027T022010Z"></script>
+<script src="assets/app.js?v=20261027T022010Z"></script>
 </body>
 </html>

@@ -22,6 +22,7 @@ import json
 import os
 import sys
 import urllib.request
+from datetime import datetime, timezone
 
 SOURCES = {
     "grippe": "https://raw.githubusercontent.com/robert-koch-institut/GrippeWeb_Daten_des_Wochenberichts/main/GrippeWeb_Daten_des_Wochenberichts.tsv",
@@ -95,6 +96,16 @@ def season_of(kw):         # "2026-W41" -> "2026/27" (Saison ab KW 40)
     return "%d/%02d" % (y - 1, y % 100)
 
 
+def stamps():
+    """Baustempel fuer die Daten-Dateien: die Veraltet-Warnung der Seite
+    misst daran, ob die Pipeline (Cron) noch laeuft."""
+    now = datetime.now(timezone.utc)
+    return {
+        "build_iso": now.strftime("%Y-%m-%d %H:%M UTC"),
+        "updated_iso": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+    }
+
+
 def add(store, age, season, week, value):
     store.setdefault(age, {}).setdefault(season, []).append((week, value))
 
@@ -141,6 +152,7 @@ def build(local_dir=None):
     # latest = höchste Kalenderwoche (Jahr, KW) aus GrippeWeb-ARE 00+ und
     # SARI-Gesamt 00+ – direkt aus den rohen "JJJJ-WKW"-Strings der TSVs.
     data["latest"] = max(latest_pool, key=as_tuple)
+    data["meta"] = stamps()
 
     return data
 
@@ -214,7 +226,26 @@ def build_europe(local_dir=None):
     eu["pos"] = ecdc_finish(eu["pos"])
 
     eu["latest"] = max(latest_pool, key=as_tuple)
+    eu["meta"] = stamps()
     return eu
+
+
+def bump_asset_versions(stamp):
+    """Cache-Busting: index.html haengt an die eigenen Assets einen Versions-Tag,
+    damit nach einem Deploy nicht das alte Script/Stylesheet aus dem Browser-Cache
+    geladen wird (die Seite liegt auf GitHub Pages)."""
+    html_path = os.path.join(ROOT, "index.html")
+    if not os.path.exists(html_path):
+        return False
+    with open(html_path, "r", encoding="utf-8") as f:
+        html = f.read()
+    import re
+    pat = re.compile(r"(assets/(?:app\.js|style\.css|data\.js|europe_data\.js))(?:\?v=[\w-]+)?")
+    html2, n = pat.subn(lambda m: m.group(1) + "?v=" + stamp, html)
+    if n and html2 != html:
+        with open(html_path, "w", encoding="utf-8") as f:
+            f.write(html2)
+    return n > 0
 
 
 def main():
@@ -256,6 +287,10 @@ def main():
           "| ILI-Länder:", len(europe["ili"]),
           "| ARI-Länder:", len(europe["ari"]),
           "| Positivitäts-Länder:", len(europe["pos"]))
+    if bump_asset_versions(data["meta"]["updated_iso"].replace("-", "").replace(":", "")):
+        print("Assets in index.html neu versioniert: v=" +
+              data["meta"]["updated_iso"].replace("-", "").replace(":", ""))
+
     print("geschrieben:", json_path, "und", js_path)
     print("geschrieben:", eu_json_path, "und", eu_js_path)
 
